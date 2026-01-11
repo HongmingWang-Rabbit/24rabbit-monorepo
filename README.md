@@ -9,7 +9,7 @@ AI-powered social media marketing automation platform. Upload materials or conne
 pnpm install
 
 # Start local services (PostgreSQL + Redis)
-docker-compose up -d
+docker compose up -d
 
 # Set up environment
 cp .env.example .env

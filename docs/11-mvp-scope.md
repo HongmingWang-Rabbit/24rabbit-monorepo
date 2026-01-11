@@ -231,7 +231,7 @@ cd 24rabbit-monorepo
 pnpm install
 
 # 2. Start local services
-docker-compose up -d  # Redis, Postgres
+docker compose up -d  # Redis, Postgres
 
 # 3. Setup database
 pnpm db:push
