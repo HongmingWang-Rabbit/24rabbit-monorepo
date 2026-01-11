@@ -55,7 +55,7 @@ pnpm dev
 - **Backend:** Next.js API Routes, BullMQ
 - **Database:** PostgreSQL with pgvector
 - **AI:** Gemini API (default), supports multiple providers
-- **Auth:** NextAuth.js
+- **Auth:** Better Auth
 - **Payments:** Stripe
 
 ## Documentation

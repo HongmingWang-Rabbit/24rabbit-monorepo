@@ -8,7 +8,7 @@
 
 | Priority | Feature | Status |
 |----------|---------|--------|
-| **P0** | User auth (NextAuth) | Required |
+| **P0** | User auth (Better Auth) | Required |
 | **P0** | Facebook OAuth connection | Required |
 | **P0** | Brand profile setup | Required |
 | **P0** | AI content generation (Gemini) | Required |
@@ -43,7 +43,7 @@ Phase 4:           + Reddit, TikTok (when API available)
 | ORM | Prisma | Type-safe, migrations |
 | Queue | BullMQ + Redis (Upstash) | Serverless, reliable |
 | AI | Gemini API | Large free tier, multimodal |
-| Auth | NextAuth.js | Easy social login |
+| Auth | Better Auth | Framework-agnostic, social login |
 | Payments | Stripe | Industry standard |
 | Storage | Cloudflare R2 | Cost-effective, S3-compatible |
 | Deployment | Vercel | Auto-scaling, free tier |
@@ -192,9 +192,9 @@ DATABASE_URL="postgresql://..."
 # Redis
 REDIS_URL="redis://..."
 
-# Auth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="..."
+# Auth (Better Auth)
+BETTER_AUTH_URL="http://localhost:3000"
+BETTER_AUTH_SECRET="..."
 
 # OAuth - Facebook
 FACEBOOK_CLIENT_ID="..."

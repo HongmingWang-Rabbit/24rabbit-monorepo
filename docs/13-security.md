@@ -36,7 +36,7 @@ export function decrypt(encryptedText: string): string {
 |-----------|---------|------------|
 | OAuth tokens | Database | AES-256-GCM |
 | API keys | Environment | Not in code |
-| User passwords | N/A | NextAuth handles |
+| User passwords | Database | Better Auth (hashed) |
 | Payment info | Stripe | Not stored locally |
 
 ### Data Retention
@@ -72,11 +72,13 @@ module.exports = {
 
 ```typescript
 // All API routes require authentication
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
-export async function requireAuth(req: Request) {
-  const session = await getServerSession(authOptions);
+export async function requireAuth() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   if (!session?.user) {
     throw new Error('Unauthorized');
   }
@@ -108,16 +110,17 @@ export async function checkRateLimit(identifier: string) {
 ### CSRF Protection
 
 ```typescript
-// NextAuth handles CSRF for auth routes
-// For API routes, use custom token
-import { randomBytes } from 'crypto';
+// Better Auth handles CSRF for auth routes automatically
+// For custom API routes, use custom token validation
+import { randomBytes, timingSafeEqual } from 'crypto';
 
 export function generateCSRFToken(): string {
   return randomBytes(32).toString('hex');
 }
 
 export function validateCSRFToken(token: string, expected: string): boolean {
-  return token === expected;
+  if (token.length !== expected.length) return false;
+  return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
 }
 ```
 
