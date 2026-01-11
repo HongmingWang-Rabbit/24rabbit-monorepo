@@ -1,0 +1,294 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// ============================================================
+// User & Subscription
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  subscription       Subscription?
+  creditTransactions CreditTransaction[]
+  socialAccounts     SocialAccount[]
+  brandProfiles      BrandProfile[]
+  materials          Material[]
+  externalSources    ExternalSource[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  GROWTH
+  BUSINESS
+}
+
+model Subscription {
+  id                   String           @id @default(cuid())
+  userId               String           @unique
+  tier                 SubscriptionTier @default(FREE)
+  stripeCustomerId     String?          @unique
+  stripeSubscriptionId String?          @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CreditTransactionType {
+  PURCHASE
+  SUBSCRIPTION_GRANT
+  USAGE
+  REFUND
+  BONUS
+}
+
+model CreditTransaction {
+  id          String                @id @default(cuid())
+  userId      String
+  amount      Int
+  type        CreditTransactionType
+  description String?
+  postId      String?
+  createdAt   DateTime              @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post? @relation(fields: [postId], references: [id])
+}
+
+// ============================================================
+// Social Accounts & Brand Profiles
+// ============================================================
+
+enum SocialPlatform {
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  INSTAGRAM
+  YOUTUBE
+  REDDIT
+  TIKTOK
+}
+
+model SocialAccount {
+  id                String         @id @default(cuid())
+  userId            String
+  platform          SocialPlatform
+  platformAccountId String
+  accountName       String
+  accessToken       String         @db.Text // Encrypted
+  refreshToken      String?        @db.Text // Encrypted
+  tokenExpiresAt    DateTime?
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandProfiles BrandProfile[]
+  posts         Post[]
+
+  @@unique([platform, platformAccountId])
+}
+
+model BrandProfile {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  description     String?  @db.Text
+  tone            String?
+  targetAudience  String?
+  contentRules    String?  @db.Text // JSON string
+  hashtagStrategy String?  @db.Text // JSON string
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialAccounts SocialAccount[]
+  schedules      Schedule[]
+  posts          Post[]
+  pendingPosts   PendingPost[]
+}
+
+// ============================================================
+// Scheduling
+// ============================================================
+
+model Schedule {
+  id             String   @id @default(cuid())
+  brandProfileId String
+  cronExpression String
+  timezone       String   @default("UTC")
+  isActive       Boolean  @default(true)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// Materials & Content
+// ============================================================
+
+enum MaterialType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+enum MaterialStatus {
+  UNUSED
+  USED_ONCE
+  USED_MULTIPLE
+}
+
+model Material {
+  id          String         @id @default(cuid())
+  userId      String
+  type        MaterialType
+  title       String?
+  description String?        @db.Text
+  fileUrl     String?
+  textContent String?        @db.Text
+  metadata    String?        @db.Text // JSON string
+  status      MaterialStatus @default(UNUSED)
+  useCount    Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts Post[]
+}
+
+model ExternalSource {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // shopify, woocommerce, etc.
+  name        String
+  url         String
+  credentials String?  @db.Text // Encrypted JSON
+  isActive    Boolean  @default(true)
+  lastCrawlAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// Posts
+// ============================================================
+
+enum PostStatus {
+  DRAFT
+  PENDING_APPROVAL
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+model Post {
+  id              String         @id @default(cuid())
+  brandProfileId  String
+  socialAccountId String
+  materialId      String?
+  status          PostStatus     @default(DRAFT)
+  content         String         @db.Text
+  mediaUrls       String?        @db.Text // JSON array
+  platformPostId  String?
+  publishedAt     DateTime?
+  scheduledFor    DateTime?
+  errorMessage    String?        @db.Text
+  creditsUsed     Int            @default(0)
+  analytics       String?        @db.Text // JSON string
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  brandProfile       BrandProfile        @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+  socialAccount      SocialAccount       @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  material           Material?           @relation(fields: [materialId], references: [id])
+  creditTransactions CreditTransaction[]
+  contentEmbedding   ContentEmbedding?
+}
+
+model PendingPost {
+  id             String   @id @default(cuid())
+  brandProfileId String
+  content        String   @db.Text
+  mediaUrls      String?  @db.Text // JSON array
+  platforms      String   @db.Text // JSON array of platform IDs
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  brandProfile BrandProfile @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// Vector Embeddings for Deduplication
+// ============================================================
+
+model ContentEmbedding {
+  id        String                 @id @default(cuid())
+  postId    String                 @unique
+  embedding Unsupported("vector(768)")
+  createdAt DateTime               @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}

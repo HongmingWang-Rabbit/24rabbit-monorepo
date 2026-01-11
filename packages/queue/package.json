@@ -1,0 +1,22 @@
+{
+  "name": "@24rabbit/queue",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint src/",
+    "clean": "rimraf node_modules .turbo"
+  },
+  "dependencies": {
+    "@24rabbit/shared": "workspace:*",
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.7.0",
+    "rimraf": "^6.0.0"
+  }
+}

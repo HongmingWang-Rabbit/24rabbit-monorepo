@@ -1,0 +1,21 @@
+{
+  "name": "24rabbit-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "turbo run db:generate --filter=@24rabbit/database",
+    "db:push": "turbo run db:push --filter=@24rabbit/database",
+    "db:seed": "turbo run db:seed --filter=@24rabbit/database",
+    "db:studio": "turbo run db:studio --filter=@24rabbit/database",
+    "clean": "turbo run clean && rimraf node_modules .turbo"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0",
+    "rimraf": "^6.0.0"
+  }
+}

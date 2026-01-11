@@ -53,7 +53,7 @@ Phase 4:           + Reddit, TikTok (when API available)
 ```
 24rabbit-monorepo/
 ├── apps/
-│   ├── web/                    # Next.js web application
+│   ├── web/                    # Next.js web application (@24rabbit/web)
 │   │   ├── app/                # App router pages
 │   │   │   ├── (auth)/         # Auth pages
 │   │   │   ├── (dashboard)/    # Dashboard pages
@@ -67,49 +67,118 @@ Phase 4:           + Reddit, TikTok (when API available)
 │   │       ├── stripe.ts
 │   │       └── utils.ts
 │   │
-│   └── worker/                 # Background job processor
-│       ├── index.ts            # Worker entry
+│   └── worker/                 # Background job processor (@24rabbit/worker)
+│       ├── src/
+│       │   └── index.ts        # Worker entry
 │       └── jobs/               # BullMQ job handlers
 │           ├── publish.ts
 │           ├── schedule.ts
 │           └── analytics.ts
 │
 ├── packages/
-│   ├── database/               # Prisma schema & client
+│   ├── database/               # Prisma schema & client (@24rabbit/database)
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── src/
-│   │       └── client.ts
+│   │       └── index.ts
 │   │
-│   ├── ai/                     # AI adapters
+│   ├── ai/                     # AI adapters (@24rabbit/ai)
 │   │   └── src/
 │   │       ├── gemini.ts
 │   │       ├── types.ts
 │   │       └── index.ts
 │   │
-│   ├── platforms/              # Platform connectors
+│   ├── platforms/              # Platform connectors (@24rabbit/platforms)
 │   │   └── src/
 │   │       ├── facebook.ts
 │   │       ├── twitter.ts
 │   │       └── index.ts
 │   │
-│   ├── queue/                  # BullMQ setup
+│   ├── queue/                  # BullMQ setup (@24rabbit/queue)
 │   │   └── src/
 │   │       ├── connection.ts
-│   │       └── queues.ts
+│   │       └── index.ts
 │   │
-│   └── shared/                 # Shared types & utils
+│   └── shared/                 # Shared types & utils (@24rabbit/shared)
 │       └── src/
 │           ├── types.ts
-│           └── utils.ts
+│           └── index.ts
 │
 ├── docs/                       # Documentation (this folder)
 │
 ├── docker-compose.yml          # Local dev (Redis, Postgres)
 ├── turbo.json                  # Turborepo config
-├── package.json
-├── pnpm-workspace.yaml
+├── package.json                # Root package.json
+├── pnpm-workspace.yaml         # pnpm workspace config
+├── .gitignore
+├── .npmrc
 └── .env.example
+```
+
+## Configuration Files
+
+### pnpm-workspace.yaml
+
+```yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+### turbo.json
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "db:generate": {},
+    "db:push": {},
+    "db:seed": {},
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+### Root package.json
+
+```json
+{
+  "name": "24rabbit-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "turbo run db:generate --filter=@24rabbit/database",
+    "db:push": "turbo run db:push --filter=@24rabbit/database",
+    "db:seed": "turbo run db:seed --filter=@24rabbit/database",
+    "db:studio": "turbo run db:studio --filter=@24rabbit/database",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0"
+  }
+}
 ```
 
 ## Environment Variables
@@ -179,11 +248,13 @@ pnpm dev  # Starts web + worker
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "db:push": "pnpm --filter database db:push",
-    "db:seed": "pnpm --filter database db:seed",
-    "db:studio": "pnpm --filter database db:studio",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "db:generate": "turbo run db:generate --filter=@24rabbit/database",
+    "db:push": "turbo run db:push --filter=@24rabbit/database",
+    "db:seed": "turbo run db:seed --filter=@24rabbit/database",
+    "db:studio": "turbo run db:studio --filter=@24rabbit/database",
+    "clean": "turbo run clean && rm -rf node_modules"
   }
 }
 ```
@@ -192,10 +263,10 @@ pnpm dev  # Starts web + worker
 
 ### Vercel (Web App)
 
-```yaml
-# vercel.json
+```json
+// vercel.json
 {
-  "buildCommand": "pnpm turbo build --filter=web",
+  "buildCommand": "turbo run build --filter=@24rabbit/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install"
 }
@@ -206,10 +277,11 @@ pnpm dev  # Starts web + worker
 ```dockerfile
 # apps/worker/Dockerfile
 FROM node:20-alpine
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm build --filter=worker
+RUN pnpm turbo run build --filter=@24rabbit/worker
 CMD ["node", "apps/worker/dist/index.js"]
 ```
 

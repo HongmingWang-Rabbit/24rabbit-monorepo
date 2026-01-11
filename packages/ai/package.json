@@ -1,0 +1,21 @@
+{
+  "name": "@24rabbit/ai",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint src/",
+    "clean": "rimraf node_modules .turbo"
+  },
+  "dependencies": {
+    "@24rabbit/shared": "workspace:*",
+    "@google/generative-ai": "^0.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.7.0",
+    "rimraf": "^6.0.0"
+  }
+}
