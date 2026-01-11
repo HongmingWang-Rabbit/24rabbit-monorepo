@@ -149,6 +149,28 @@ ai_config:
 | Image Generation | Imagen API (default) | AI-generated images |
 | Video Generation | Veo API (default) | AI-generated short videos |
 | Vector Database | PostgreSQL + pgvector | Content deduplication |
+| Object Storage | Cloudflare R2 / MinIO | User file uploads (images, videos) |
+| Queue | Redis + BullMQ | Background job processing |
+
+## Local Development Infrastructure
+
+The following services are provided via `docker-compose.yml`:
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| PostgreSQL (pgvector) | 5432 | Database with vector extensions |
+| Redis | 6379 | Job queue backend |
+| MinIO | 9000 (API), 9001 (Console) | S3-compatible storage (local R2 replacement) |
+
+### MinIO (Local Object Storage)
+
+MinIO provides S3-compatible storage for local development, replacing Cloudflare R2:
+
+- **Console URL:** http://localhost:9001
+- **Credentials:** `minioadmin` / `minioadmin`
+- **Bucket:** `24rabbit` (auto-created on startup)
+
+The bucket is automatically created by the `minio-init` container when you run `docker-compose up -d`.
 
 ---
 

@@ -45,7 +45,7 @@ Phase 4:           + Reddit, TikTok (when API available)
 | AI | Gemini API | Large free tier, multimodal |
 | Auth | Better Auth | Framework-agnostic, social login |
 | Payments | Stripe | Industry standard |
-| Storage | Cloudflare R2 | Cost-effective, S3-compatible |
+| Storage | Cloudflare R2 / MinIO | Cost-effective, S3-compatible (MinIO for local dev) |
 | Deployment | Vercel | Auto-scaling, free tier |
 
 ## Monorepo Structure
@@ -106,7 +106,7 @@ Phase 4:           + Reddit, TikTok (when API available)
 │
 ├── docs/                       # Documentation (this folder)
 │
-├── docker-compose.yml          # Local dev (Redis, Postgres)
+├── docker-compose.yml          # Local dev (Postgres, Redis, MinIO)
 ├── turbo.json                  # Turborepo config
 ├── package.json                # Root package.json
 ├── pnpm-workspace.yaml         # pnpm workspace config
@@ -210,11 +210,11 @@ STRIPE_PRICE_STARTER="price_..."
 STRIPE_PRICE_GROWTH="price_..."
 STRIPE_PRICE_BUSINESS="price_..."
 
-# Storage
-R2_ACCESS_KEY_ID="..."
-R2_SECRET_ACCESS_KEY="..."
-R2_BUCKET_NAME="..."
-R2_ENDPOINT="..."
+# Storage (MinIO for local dev, R2 for production)
+R2_ACCESS_KEY_ID="minioadmin"           # Use MinIO credentials for local dev
+R2_SECRET_ACCESS_KEY="minioadmin"
+R2_BUCKET_NAME="24rabbit"
+R2_ENDPOINT="http://localhost:9000"     # MinIO local, or R2 endpoint for prod
 
 # Encryption
 ENCRYPTION_KEY="..."  # 32 bytes hex
@@ -231,7 +231,7 @@ cd 24rabbit-monorepo
 pnpm install
 
 # 2. Start local services
-docker compose up -d  # Redis, Postgres
+docker compose up -d  # Postgres, Redis, MinIO (bucket auto-created)
 
 # 3. Setup database
 pnpm db:push

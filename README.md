@@ -8,7 +8,7 @@ AI-powered social media marketing automation platform. Upload materials or conne
 # Install dependencies
 pnpm install
 
-# Start local services (PostgreSQL + Redis)
+# Start local services (PostgreSQL, Redis, MinIO)
 docker compose up -d
 
 # Set up environment
@@ -56,6 +56,7 @@ pnpm dev
 - **Database:** PostgreSQL with pgvector
 - **AI:** Gemini API (default), supports multiple providers
 - **Auth:** Better Auth
+- **Storage:** Cloudflare R2 (MinIO for local dev)
 - **Payments:** Stripe
 
 ## Documentation

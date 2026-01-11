@@ -22,7 +22,7 @@ pnpm db:seed                # Seed the database
 pnpm db:studio              # Open Prisma Studio GUI
 
 # Local services
-docker compose up -d        # Start PostgreSQL and Redis
+docker compose up -d        # Start PostgreSQL, Redis, and MinIO (S3-compatible storage)
 
 # Run commands in specific package
 pnpm --filter @24rabbit/web dev
