@@ -12,6 +12,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "drizzle.config.ts"],
   "exclude": ["node_modules"]
 }

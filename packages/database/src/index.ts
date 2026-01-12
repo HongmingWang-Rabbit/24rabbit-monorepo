@@ -1,21 +1,15 @@
-import { PrismaClient } from '@prisma/client';
+// Database connection
+export { db, queryClient } from './db';
+export type { Database } from './db';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+// Schema tables and types
+export * from './schema';
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === 'development'
-        ? ['query', 'error', 'warn']
-        : ['error'],
-  });
+// Relations
+export * from './relations';
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+// JSON field types
+export * from './types';
 
-export * from '@prisma/client';
-export default prisma;
+// Re-export drizzle utilities for convenience
+export { eq, ne, gt, gte, lt, lte, and, or, not, isNull, isNotNull, sql, asc, desc } from 'drizzle-orm';
