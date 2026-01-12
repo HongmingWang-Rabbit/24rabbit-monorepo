@@ -16,6 +16,7 @@ import { PLATFORM_LIMITS } from '@24rabbit/shared';
 import type { SimilarityService } from '../services/similarity.service';
 import type { Logger } from '../utils/logger';
 import { classifyError, WorkerError, ContentPolicyError } from '../utils/errors';
+import { config } from '../config';
 
 // =============================================================================
 // Types
@@ -53,13 +54,6 @@ interface GeneratedVariation {
   angleReason: string;
   platform: SocialPlatform;
 }
-
-// =============================================================================
-// Constants
-// =============================================================================
-
-const SIMILARITY_THRESHOLD = 0.85;
-const VARIATIONS_COUNT = 3;
 
 // =============================================================================
 // Processor Factory
@@ -134,7 +128,7 @@ export function createContentGenerationProcessor(deps: ContentGenerationProcesso
       const similarContent = await similarityService.checkSimilarity(
         materialText.slice(0, 2000),
         organizationId,
-        SIMILARITY_THRESHOLD - 0.1 // Slightly lower threshold for pre-check
+        config.similarityThreshold - 0.1 // Slightly lower threshold for pre-check
       );
 
       if (similarContent.length > 0) {
@@ -320,7 +314,7 @@ async function generatePlatformContent(
   const variations: GeneratedVariation[] = [];
 
   // Generate variations using different angles
-  for (let i = 0; i < Math.min(VARIATIONS_COUNT, angles.length); i++) {
+  for (let i = 0; i < Math.min(config.contentGeneration.variationsCount, angles.length); i++) {
     const angle = angles[i] ?? 'engaging';
 
     const options: ContentGenerationOptions = {
@@ -336,7 +330,11 @@ async function generatePlatformContent(
       maxLength: platformLimits.maxLength,
       includeHashtags: true,
       hashtagCount: Math.min(5, platformLimits.maxHashtags ?? 30),
-      emojiUsage: brandProfile.emojiUsage.toLowerCase() as 'none' | 'minimal' | 'moderate' | 'heavy',
+      emojiUsage: brandProfile.emojiUsage.toLowerCase() as
+        | 'none'
+        | 'minimal'
+        | 'moderate'
+        | 'heavy',
       languageRules: brandProfile.languageRules,
       examplePosts: brandProfile.examplePosts.slice(0, 3), // Limit examples to avoid token bloat
       angle,
@@ -417,7 +415,7 @@ async function validateAndFilterVariations(
       const similar = await similarityService.checkSimilarity(
         variation.content,
         organizationId,
-        SIMILARITY_THRESHOLD
+        config.similarityThreshold
       );
 
       if (similar.length > 0) {

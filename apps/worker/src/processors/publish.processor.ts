@@ -18,6 +18,7 @@ import type { RateLimiterService } from '../services/rate-limiter.service';
 import type { SimilarityService } from '../services/similarity.service';
 import type { Logger } from '../utils/logger';
 import { classifyError, RateLimitError, AuthError, WorkerError } from '../utils/errors';
+import { config } from '../config';
 
 // =============================================================================
 // Types
@@ -95,10 +96,7 @@ export function createPublishProcessor(deps: PublishProcessorDeps) {
 
       if (!rateLimitResult.allowed) {
         const retryAfterMs = (rateLimitResult.retryAfter ?? 60) * 1000;
-        throw new RateLimitError(
-          `Rate limit exceeded: ${rateLimitResult.reason}`,
-          retryAfterMs
-        );
+        throw new RateLimitError(`Rate limit exceeded: ${rateLimitResult.reason}`, retryAfterMs);
       }
 
       // 4. Check and refresh token if needed
@@ -153,11 +151,7 @@ export function createPublishProcessor(deps: PublishProcessorDeps) {
       });
 
       if (!publishResult.success) {
-        throw new WorkerError(
-          publishResult.error ?? 'Publishing failed',
-          true,
-          'unknown'
-        );
+        throw new WorkerError(publishResult.error ?? 'Publishing failed', true, 'unknown');
       }
 
       // 6. Record rate limit usage
@@ -232,7 +226,7 @@ export function createPublishProcessor(deps: PublishProcessorDeps) {
             socialAccountId,
           },
           {
-            delay: 5 * 60 * 1000, // 5 minutes
+            delay: config.analytics.postPublishDelayMs,
           }
         );
       }

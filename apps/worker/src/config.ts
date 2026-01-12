@@ -78,6 +78,25 @@ export const config = {
   // Similarity threshold for deduplication
   similarityThreshold: parseFloat(optionalEnv('SIMILARITY_THRESHOLD', '0.85')),
 
+  // Content generation
+  contentGeneration: {
+    variationsCount: optionalEnvInt('CONTENT_VARIATIONS_COUNT', 3),
+  },
+
+  // Analytics collection
+  analytics: {
+    lookbackDays: optionalEnvInt('ANALYTICS_LOOKBACK_DAYS', 7),
+    batchSize: optionalEnvInt('ANALYTICS_BATCH_SIZE', 100),
+    minUpdateIntervalMs: optionalEnvInt('ANALYTICS_MIN_UPDATE_INTERVAL_MS', 30 * 60 * 1000), // 30 minutes
+    postPublishDelayMs: optionalEnvInt('ANALYTICS_POST_PUBLISH_DELAY_MS', 5 * 60 * 1000), // 5 minutes
+  },
+
+  // Distributed locking (TTL in seconds)
+  lock: {
+    contentSchedulerTtl: optionalEnvInt('LOCK_CONTENT_SCHEDULER_TTL', 300), // 5 minutes
+    analyticsSchedulerTtl: optionalEnvInt('LOCK_ANALYTICS_SCHEDULER_TTL', 600), // 10 minutes
+  },
+
   // Graceful shutdown
   shutdownTimeoutMs: optionalEnvInt('SHUTDOWN_TIMEOUT_MS', 30000),
 

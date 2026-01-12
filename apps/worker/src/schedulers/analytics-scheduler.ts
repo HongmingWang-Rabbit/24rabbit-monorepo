@@ -13,6 +13,7 @@ import { posts } from '@24rabbit/database';
 import type { SocialPlatform } from '@24rabbit/shared';
 import type { DistributedLock } from '../utils/lock';
 import type { Logger } from '../utils/logger';
+import { config } from '../config';
 
 // =============================================================================
 // Types
@@ -46,11 +47,7 @@ export interface AnalyticsScheduler {
 // Constants
 // =============================================================================
 
-const DEFAULT_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 const LOCK_KEY = 'analytics-scheduler';
-const LOCK_TTL_MS = 5 * 60 * 1000; // 5 minute lock
-const LOOKBACK_DAYS = 7; // Collect analytics for posts from last 7 days
-const BATCH_SIZE = 100; // Process posts in batches
 
 // =============================================================================
 // Scheduler Factory
@@ -68,7 +65,7 @@ export function createAnalyticsScheduler(deps: AnalyticsSchedulerDeps): Analytic
   return {
     async tick(): Promise<void> {
       // Acquire distributed lock to prevent duplicate execution
-      const acquired = await lock.acquire(LOCK_KEY, LOCK_TTL_MS);
+      const acquired = await lock.acquire(LOCK_KEY, config.lock.analyticsSchedulerTtl);
 
       if (!acquired) {
         logger.debug('Analytics scheduler lock not acquired, skipping tick');
@@ -81,7 +78,7 @@ export function createAnalyticsScheduler(deps: AnalyticsSchedulerDeps): Analytic
 
         // Calculate lookback date
         const lookbackDate = new Date();
-        lookbackDate.setDate(lookbackDate.getDate() - LOOKBACK_DAYS);
+        lookbackDate.setDate(lookbackDate.getDate() - config.analytics.lookbackDays);
 
         // Find posts that need analytics collection
         // Prioritize posts that haven't been updated recently
@@ -104,7 +101,7 @@ export function createAnalyticsScheduler(deps: AnalyticsSchedulerDeps): Analytic
             // Then by recency
             desc(posts.publishedAt),
           ],
-          limit: BATCH_SIZE,
+          limit: config.analytics.batchSize,
         });
 
         if (recentPosts.length === 0) {
@@ -114,17 +111,17 @@ export function createAnalyticsScheduler(deps: AnalyticsSchedulerDeps): Analytic
 
         logger.info('Queueing analytics jobs for recent posts', {
           postsCount: recentPosts.length,
-          lookbackDays: LOOKBACK_DAYS,
+          lookbackDays: config.analytics.lookbackDays,
         });
 
         let jobsQueued = 0;
         const jobsByPlatform: Record<string, number> = {};
 
         for (const post of recentPosts) {
-          // Skip if metrics were updated less than 30 minutes ago
+          // Skip if metrics were updated recently
           if (post.metricsUpdatedAt) {
             const timeSinceUpdate = Date.now() - new Date(post.metricsUpdatedAt).getTime();
-            if (timeSinceUpdate < 30 * 60 * 1000) {
+            if (timeSinceUpdate < config.analytics.minUpdateIntervalMs) {
               continue;
             }
           }
@@ -169,7 +166,7 @@ export function createAnalyticsScheduler(deps: AnalyticsSchedulerDeps): Analytic
       }
     },
 
-    start(intervalMs: number = DEFAULT_INTERVAL_MS): void {
+    start(intervalMs: number = config.schedulerIntervals.analytics): void {
       if (isRunning) {
         logger.warn('Analytics scheduler already running');
         return;

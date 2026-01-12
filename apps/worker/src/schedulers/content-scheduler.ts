@@ -13,6 +13,7 @@ import { schedules, materials, socialAccounts } from '@24rabbit/database';
 import type { SocialPlatform } from '@24rabbit/shared';
 import type { DistributedLock } from '../utils/lock';
 import type { Logger } from '../utils/logger';
+import { config } from '../config';
 
 // =============================================================================
 // Types
@@ -46,9 +47,7 @@ export interface ContentScheduler {
 // Constants
 // =============================================================================
 
-const DEFAULT_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const LOCK_KEY = 'content-scheduler';
-const LOCK_TTL_MS = 60 * 1000; // 1 minute lock
 
 // =============================================================================
 // Scheduler Factory
@@ -66,7 +65,7 @@ export function createContentScheduler(deps: ContentSchedulerDeps): ContentSched
   return {
     async tick(): Promise<void> {
       // Acquire distributed lock to prevent duplicate execution
-      const acquired = await lock.acquire(LOCK_KEY, LOCK_TTL_MS);
+      const acquired = await lock.acquire(LOCK_KEY, config.lock.contentSchedulerTtl);
 
       if (!acquired) {
         logger.debug('Content scheduler lock not acquired, skipping tick');
@@ -83,10 +82,7 @@ export function createContentScheduler(deps: ContentSchedulerDeps): ContentSched
         const dueSchedules = await db.query.schedules.findMany({
           where: and(
             eq(schedules.isActive, true),
-            or(
-              isNull(schedules.nextRunAt),
-              lte(schedules.nextRunAt, now)
-            )
+            or(isNull(schedules.nextRunAt), lte(schedules.nextRunAt, now))
           ),
           with: {
             brandProfile: {
@@ -116,7 +112,11 @@ export function createContentScheduler(deps: ContentSchedulerDeps): ContentSched
             const material = await selectMaterial(
               db,
               schedule.organizationId,
-              schedule.materialSelectionStrategy as 'ROUND_ROBIN' | 'RANDOM' | 'PRIORITY' | 'LEAST_USED'
+              schedule.materialSelectionStrategy as
+                | 'ROUND_ROBIN'
+                | 'RANDOM'
+                | 'PRIORITY'
+                | 'LEAST_USED'
             );
 
             if (!material) {
@@ -128,7 +128,8 @@ export function createContentScheduler(deps: ContentSchedulerDeps): ContentSched
             }
 
             // Get platforms from schedule or brand profile's connected accounts
-            const platforms = schedule.platforms as SocialPlatform[] ??
+            const platforms =
+              (schedule.platforms as SocialPlatform[]) ??
               schedule.brandProfile.socialAccounts.map((a) => a.platform as SocialPlatform);
 
             if (platforms.length === 0) {
@@ -196,7 +197,7 @@ export function createContentScheduler(deps: ContentSchedulerDeps): ContentSched
       }
     },
 
-    start(intervalMs: number = DEFAULT_INTERVAL_MS): void {
+    start(intervalMs: number = config.schedulerIntervals.content): void {
       if (isRunning) {
         logger.warn('Content scheduler already running');
         return;
@@ -244,10 +245,7 @@ async function selectMaterial(
 ): Promise<{ id: string } | null> {
   // Base query: ready materials that haven't been used too recently
   const availableMaterials = await db.query.materials.findMany({
-    where: and(
-      eq(materials.organizationId, organizationId),
-      eq(materials.status, 'READY')
-    ),
+    where: and(eq(materials.organizationId, organizationId), eq(materials.status, 'READY')),
     columns: {
       id: true,
       usageCount: true,
@@ -266,14 +264,15 @@ async function selectMaterial(
   switch (strategy) {
     case 'ROUND_ROBIN':
       // Select oldest unused or least recently used
-      selected = availableMaterials.sort((a, b) => {
-        if (!a.lastUsedAt && b.lastUsedAt) return -1;
-        if (a.lastUsedAt && !b.lastUsedAt) return 1;
-        if (!a.lastUsedAt && !b.lastUsedAt) {
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        }
-        return new Date(a.lastUsedAt!).getTime() - new Date(b.lastUsedAt!).getTime();
-      })[0] ?? null;
+      selected =
+        availableMaterials.sort((a, b) => {
+          if (!a.lastUsedAt && b.lastUsedAt) return -1;
+          if (a.lastUsedAt && !b.lastUsedAt) return 1;
+          if (!a.lastUsedAt && !b.lastUsedAt) {
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          }
+          return new Date(a.lastUsedAt!).getTime() - new Date(b.lastUsedAt!).getTime();
+        })[0] ?? null;
       break;
 
     case 'RANDOM':
@@ -283,18 +282,20 @@ async function selectMaterial(
 
     case 'PRIORITY':
       // Highest priority first, then by creation date
-      selected = availableMaterials.sort((a, b) => {
-        const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
-        if (priorityDiff !== 0) return priorityDiff;
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      })[0] ?? null;
+      selected =
+        availableMaterials.sort((a, b) => {
+          const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
+          if (priorityDiff !== 0) return priorityDiff;
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        })[0] ?? null;
       break;
 
     case 'LEAST_USED':
       // Lowest usage count first
-      selected = availableMaterials.sort((a, b) => {
-        return (a.usageCount ?? 0) - (b.usageCount ?? 0);
-      })[0] ?? null;
+      selected =
+        availableMaterials.sort((a, b) => {
+          return (a.usageCount ?? 0) - (b.usageCount ?? 0);
+        })[0] ?? null;
       break;
 
     default:
@@ -327,7 +328,7 @@ function calculateNextPublishTime(schedule: {
 
   // Sort hours and find next available
   const sortedHours = [...preferredHours].sort((a, b) => a - b);
-  let nextHour = sortedHours.find((h) => h > currentHour);
+  const nextHour = sortedHours.find((h) => h > currentHour);
 
   const scheduledFor = new Date(now);
 
@@ -346,10 +347,7 @@ function calculateNextPublishTime(schedule: {
 /**
  * Calculate the next run time based on schedule frequency
  */
-function calculateNextRunAt(schedule: {
-  frequency: string;
-  frequencyValue?: number | null;
-}): Date {
+function calculateNextRunAt(schedule: { frequency: string; frequencyValue?: number | null }): Date {
   const now = new Date();
   const value = schedule.frequencyValue ?? 1;
 

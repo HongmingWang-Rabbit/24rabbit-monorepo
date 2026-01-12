@@ -5,6 +5,7 @@
  * Checks if new content is too similar to recently published posts.
  */
 
+import { createHash } from 'crypto';
 import type { AIAdapter } from '@24rabbit/ai';
 import type { Database } from '@24rabbit/database';
 import { sql } from '@24rabbit/database';
@@ -123,7 +124,7 @@ export function createSimilarityService(deps: SimilarityServiceDeps): Similarity
       const vectorLiteral = `[${embedding.join(',')}]`;
 
       // Create hash of content for change detection
-      const contentHash = await hashContent(text);
+      const contentHash = hashContent(text);
 
       // Insert or update embedding
       const result = await db.execute(sql`
@@ -176,16 +177,8 @@ export function createSimilarityService(deps: SimilarityServiceDeps): Similarity
 // =============================================================================
 
 /**
- * Generate a hash of content for change detection
+ * Generate a SHA-256 hash of content for change detection
  */
-async function hashContent(text: string): Promise<string> {
-  // Use a simple hash for change detection
-  // In production, consider using crypto.subtle.digest
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash.toString(16);
+function hashContent(text: string): string {
+  return createHash('sha256').update(text).digest('hex');
 }
