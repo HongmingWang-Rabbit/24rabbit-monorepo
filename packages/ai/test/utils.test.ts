@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AIError, fetchImageAsBase64, withRetry, parseGeminiError, parseAIResponse } from './utils';
+import {
+  AIError,
+  fetchImageAsBase64,
+  withRetry,
+  parseGeminiError,
+  parseAIResponse,
+} from '../src/utils';
 
 describe('AIError', () => {
   it('should create error with message, code, and retryable flag', () => {

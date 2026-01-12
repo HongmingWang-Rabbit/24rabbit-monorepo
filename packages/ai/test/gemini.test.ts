@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GeminiAdapter, createGeminiAdapter, createAIAdapter, GEMINI_MODELS } from './gemini';
-import { AIError, fetchImageAsBase64 } from './utils';
-import { EMBEDDING_DIMENSION } from './types';
+import { GeminiAdapter, createGeminiAdapter, createAIAdapter, GEMINI_MODELS } from '../src/gemini';
+import { AIError, fetchImageAsBase64 } from '../src/utils';
+import { EMBEDDING_DIMENSION } from '../src/types';
 
 // Mock the Google Generative AI module
 vi.mock('@google/generative-ai', () => ({
@@ -15,8 +15,8 @@ vi.mock('@google/generative-ai', () => ({
 }));
 
 // Mock fetchImageAsBase64
-vi.mock('./utils', async () => {
-  const actual = await vi.importActual('./utils');
+vi.mock('../src/utils', async () => {
+  const actual = await vi.importActual('../src/utils');
   return {
     ...actual,
     fetchImageAsBase64: vi.fn(),

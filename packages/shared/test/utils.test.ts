@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { encrypt, decrypt, generateEncryptionKey, sleep, retry, truncate } from './utils';
+import { encrypt, decrypt, generateEncryptionKey, sleep, retry, truncate } from '../src/utils';
 
 describe('encrypt/decrypt', () => {
   const testKey = '0'.repeat(64); // 32 bytes hex (256 bits)
