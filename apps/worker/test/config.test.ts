@@ -21,7 +21,7 @@ describe('Worker Config', () => {
 
   describe('required environment variables', () => {
     it('should load config with required env vars set', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.redisUrl).toBe('redis://localhost:6379');
       expect(config.databaseUrl).toBe('postgresql://test:test@localhost:5432/test');
@@ -32,7 +32,7 @@ describe('Worker Config', () => {
       delete process.env.REDIS_URL;
       vi.resetModules();
 
-      await expect(import('./config')).rejects.toThrow(
+      await expect(import('../src/config')).rejects.toThrow(
         'Missing required environment variable: REDIS_URL'
       );
     });
@@ -41,7 +41,7 @@ describe('Worker Config', () => {
       delete process.env.DATABASE_URL;
       vi.resetModules();
 
-      await expect(import('./config')).rejects.toThrow(
+      await expect(import('../src/config')).rejects.toThrow(
         'Missing required environment variable: DATABASE_URL'
       );
     });
@@ -50,7 +50,7 @@ describe('Worker Config', () => {
       delete process.env.ENCRYPTION_KEY;
       vi.resetModules();
 
-      await expect(import('./config')).rejects.toThrow(
+      await expect(import('../src/config')).rejects.toThrow(
         'Missing required environment variable: ENCRYPTION_KEY'
       );
     });
@@ -59,7 +59,7 @@ describe('Worker Config', () => {
   describe('optional environment variables', () => {
     it('should use default values for optional vars', async () => {
       // Note: NODE_ENV may be set by vitest, so we only check truly optional vars
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.aiProvider).toBe('gemini');
       expect(config.storageUrl).toBe('http://localhost:9000');
@@ -70,7 +70,7 @@ describe('Worker Config', () => {
       process.env.NODE_ENV = 'development';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.nodeEnv).toBe('development');
       expect(config.isDev).toBe(true);
@@ -84,7 +84,7 @@ describe('Worker Config', () => {
       process.env.LOG_LEVEL = 'debug';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.nodeEnv).toBe('production');
       expect(config.isProd).toBe(true);
@@ -96,7 +96,7 @@ describe('Worker Config', () => {
 
   describe('optional integer environment variables', () => {
     it('should use default values for optional int vars', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.concurrency.analyze).toBe(3);
       expect(config.concurrency.generate).toBe(3);
@@ -109,7 +109,7 @@ describe('Worker Config', () => {
       process.env.WORKER_CONCURRENCY_GENERATE = '20';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.concurrency.analyze).toBe(10);
       expect(config.concurrency.generate).toBe(20);
@@ -119,7 +119,7 @@ describe('Worker Config', () => {
       process.env.WORKER_CONCURRENCY_ANALYZE = 'not-a-number';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.concurrency.analyze).toBe(3); // default value
     });
@@ -127,7 +127,7 @@ describe('Worker Config', () => {
 
   describe('worker identity', () => {
     it('should generate worker ID from process.pid by default', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.workerId).toMatch(/^worker-\d+$/);
     });
@@ -136,7 +136,7 @@ describe('Worker Config', () => {
       process.env.WORKER_ID = 'custom-worker-123';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.workerId).toBe('custom-worker-123');
     });
@@ -144,7 +144,7 @@ describe('Worker Config', () => {
 
   describe('scheduler intervals', () => {
     it('should have default scheduler intervals', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.schedulerIntervals.content).toBe(5 * 60 * 1000);
       expect(config.schedulerIntervals.analytics).toBe(60 * 60 * 1000);
@@ -155,7 +155,7 @@ describe('Worker Config', () => {
       process.env.SCHEDULER_ANALYTICS_INTERVAL_MS = '120000';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.schedulerIntervals.content).toBe(60000);
       expect(config.schedulerIntervals.analytics).toBe(120000);
@@ -164,7 +164,7 @@ describe('Worker Config', () => {
 
   describe('rate limiting', () => {
     it('should have default rate limits', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.rateLimit.defaultPostsPerDay).toBe(50);
       expect(config.rateLimit.defaultPostsPerHour).toBe(25);
@@ -173,7 +173,7 @@ describe('Worker Config', () => {
 
   describe('circuit breaker', () => {
     it('should have default circuit breaker settings', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.circuitBreaker.threshold).toBe(5);
       expect(config.circuitBreaker.resetTimeoutMs).toBe(60000);
@@ -182,7 +182,7 @@ describe('Worker Config', () => {
 
   describe('similarity threshold', () => {
     it('should have default similarity threshold', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.similarityThreshold).toBe(0.85);
     });
@@ -191,7 +191,7 @@ describe('Worker Config', () => {
       process.env.SIMILARITY_THRESHOLD = '0.90';
       vi.resetModules();
 
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.similarityThreshold).toBe(0.9);
     });
@@ -199,7 +199,7 @@ describe('Worker Config', () => {
 
   describe('analytics settings', () => {
     it('should have default analytics settings', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.analytics.lookbackDays).toBe(7);
       expect(config.analytics.batchSize).toBe(100);
@@ -210,7 +210,7 @@ describe('Worker Config', () => {
 
   describe('lock settings', () => {
     it('should have default lock TTL settings', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.lock.contentSchedulerTtl).toBe(300);
       expect(config.lock.analyticsSchedulerTtl).toBe(600);
@@ -219,7 +219,7 @@ describe('Worker Config', () => {
 
   describe('shutdown timeout', () => {
     it('should have default shutdown timeout', async () => {
-      const { config } = await import('./config');
+      const { config } = await import('../src/config');
 
       expect(config.shutdownTimeoutMs).toBe(30000);
     });

@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createLogger } from './logger';
+import { createLogger } from '../../src/utils/logger';
 
 // Mock the config
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     logLevel: 'debug', // Allow all log levels in tests
     workerId: 'test-worker',

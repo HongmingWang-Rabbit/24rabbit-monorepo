@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createRateLimiterService, type RateLimiterService } from './rate-limiter.service';
+import {
+  createRateLimiterService,
+  type RateLimiterService,
+} from '../../src/services/rate-limiter.service';
 
 // Mock Redis client
 function createMockRedis() {

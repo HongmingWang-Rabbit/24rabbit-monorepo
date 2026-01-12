@@ -38,7 +38,7 @@ describe('Database Module', () => {
 
   describe('createDatabase', () => {
     it('should create a database instance with connection string', async () => {
-      const { createDatabase } = await import('../db');
+      const { createDatabase } = await import('../src/db');
       const postgres = (await import('postgres')).default;
       const { drizzle } = await import('drizzle-orm/postgres-js');
 
@@ -55,7 +55,7 @@ describe('Database Module', () => {
       delete process.env.DATABASE_URL;
       vi.resetModules();
 
-      const { db } = await import('../db');
+      const { db } = await import('../src/db');
 
       // Accessing db.select should trigger lazy initialization
       expect(() => db.select).toThrow('DATABASE_URL environment variable is not set');
@@ -65,7 +65,7 @@ describe('Database Module', () => {
       process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb';
       vi.resetModules();
 
-      const { db } = await import('../db');
+      const { db } = await import('../src/db');
       const postgres = (await import('postgres')).default;
 
       // Access a property to trigger lazy initialization
@@ -84,7 +84,7 @@ describe('Database Module', () => {
       vi.mocked(postgres).mockClear();
 
       // Import but don't access any properties
-      await import('../db');
+      await import('../src/db');
 
       // postgres should not have been called yet
       expect(postgres).not.toHaveBeenCalled();
@@ -97,7 +97,7 @@ describe('Database Module', () => {
       const postgres = (await import('postgres')).default;
       vi.mocked(postgres).mockClear();
 
-      const { db } = await import('../db');
+      const { db } = await import('../src/db');
 
       // Access a property to trigger lazy initialization
       const _ = db.select;
@@ -112,7 +112,7 @@ describe('Database Module', () => {
       const postgres = (await import('postgres')).default;
       vi.mocked(postgres).mockClear();
 
-      const { db } = await import('../db');
+      const { db } = await import('../src/db');
 
       // Access properties multiple times
       const _1 = db.select;
@@ -136,7 +136,7 @@ describe('Database Module', () => {
         testProp: 'testValue',
       } as unknown as ReturnType<typeof postgres>);
 
-      const { queryClient } = await import('../db');
+      const { queryClient } = await import('../src/db');
 
       // Access a property
       const _ = queryClient.end;

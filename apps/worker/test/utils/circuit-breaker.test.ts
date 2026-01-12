@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { CircuitBreaker, CircuitBreakerOpenError } from './circuit-breaker';
+import { CircuitBreaker, CircuitBreakerOpenError } from '../../src/utils/circuit-breaker';
 
 // Mock the config
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     circuitBreaker: {
       threshold: 5,

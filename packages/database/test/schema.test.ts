@@ -5,7 +5,7 @@ import {
   socialPlatform,
   contentAngle,
   materialStatus,
-} from '../schema/enums';
+} from '../src/schema/enums';
 
 describe('Database Enums', () => {
   it('should have correct member roles', () => {

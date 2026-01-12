@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMaterialAnalysisProcessor } from './material-analysis.processor';
+import { createMaterialAnalysisProcessor } from '../../src/processors/material-analysis.processor';
 import type { Job } from 'bullmq';
 import type { AnalyzeJobData } from '@24rabbit/queue';
 

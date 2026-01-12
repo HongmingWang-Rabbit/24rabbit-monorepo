@@ -13,7 +13,7 @@ import {
   classifyError,
   getUserFriendlyMessage,
   USER_FRIENDLY_MESSAGES,
-} from './errors';
+} from '../../src/utils/errors';
 
 describe('WorkerError', () => {
   it('should create error with message and retryable flag', () => {

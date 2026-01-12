@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createPublishProcessor } from './publish.processor';
+import { createPublishProcessor } from '../../src/processors/publish.processor';
 import type { Job } from 'bullmq';
 import type { PublishJobData } from '@24rabbit/queue';
 

@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the config before any imports
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     circuitBreaker: {
       threshold: 5,
@@ -41,7 +41,7 @@ import {
   getSupportedPlatforms,
   initializePlatformConnectors,
   type PlatformService,
-} from './platform.service';
+} from '../../src/services/platform.service';
 import type { SocialPlatform } from '@24rabbit/shared';
 
 describe('PlatformService', () => {

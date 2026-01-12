@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createContentScheduler, type ContentScheduler } from './content-scheduler';
+import {
+  createContentScheduler,
+  type ContentScheduler,
+} from '../../src/schedulers/content-scheduler';
 
 // Mock dependencies
 const createMockDeps = () => ({

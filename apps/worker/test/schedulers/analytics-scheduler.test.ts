@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createAnalyticsScheduler, type AnalyticsScheduler } from './analytics-scheduler';
+import {
+  createAnalyticsScheduler,
+  type AnalyticsScheduler,
+} from '../../src/schedulers/analytics-scheduler';
 
 // Mock dependencies
 const createMockDeps = () => ({

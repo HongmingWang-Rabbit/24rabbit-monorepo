@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the config before importing lock module
-vi.mock('../config', () => ({
+vi.mock('../../src/config', () => ({
   config: {
     logLevel: 'error',
     workerId: 'default-test-worker',
@@ -13,7 +13,7 @@ vi.mock('../config', () => ({
   },
 }));
 
-import { DistributedLock, withLock, LOCK_KEYS, createDistributedLock } from './lock';
+import { DistributedLock, withLock, LOCK_KEYS, createDistributedLock } from '../../src/utils/lock';
 
 // Mock Redis client
 function createMockRedis() {

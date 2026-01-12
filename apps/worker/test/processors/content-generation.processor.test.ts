@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createContentGenerationProcessor } from './content-generation.processor';
+import { createContentGenerationProcessor } from '../../src/processors/content-generation.processor';
 import type { Job } from 'bullmq';
 import type { GenerateJobData } from '@24rabbit/queue';
 
