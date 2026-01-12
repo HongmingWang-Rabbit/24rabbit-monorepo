@@ -28,7 +28,7 @@ describe('GeminiAdapter', () => {
   const mockEmbedContent = vi.fn();
   const mockGetGenerativeModel = vi.fn();
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     // Setup mock model
