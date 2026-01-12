@@ -8,7 +8,11 @@ import {
   RateLimitError,
   AuthError,
   ContentPolicyError,
+  NotFoundError,
+  QuotaExceededError,
   classifyError,
+  getUserFriendlyMessage,
+  USER_FRIENDLY_MESSAGES,
 } from './errors';
 
 describe('WorkerError', () => {
@@ -200,5 +204,239 @@ describe('classifyError', () => {
 
     expect(result.retryable).toBe(false);
     expect(result.category).toBe('not_found');
+  });
+
+  it('should classify non-Error objects as unknown retryable', () => {
+    const result = classifyError('string error');
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('unknown');
+  });
+
+  it('should classify ETIMEDOUT as network error', () => {
+    const error = new Error('Connection timed out') as Error & { code: string };
+    error.code = 'ETIMEDOUT';
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('network');
+  });
+
+  it('should classify ECONNRESET as network error', () => {
+    const error = new Error('Connection reset') as Error & { code: string };
+    error.code = 'ECONNRESET';
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('network');
+  });
+
+  it('should classify ENOTFOUND as network error', () => {
+    const error = new Error('DNS resolution failed') as Error & { code: string };
+    error.code = 'ENOTFOUND';
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('network');
+  });
+
+  it('should classify network message as network error', () => {
+    const error = new Error('network error occurred');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('network');
+  });
+
+  it('should classify too many requests message as rate limit', () => {
+    const error = new Error('too many requests');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('rate_limit');
+    expect(result.delayMs).toBe(60000);
+  });
+
+  it('should classify 502 status as service unavailable', () => {
+    const error = new Error('Bad gateway') as Error & { status: number };
+    error.status = 502;
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('service_unavailable');
+  });
+
+  it('should classify 504 status as service unavailable', () => {
+    // Note: Using a message without 'timeout' since that would be classified as network first
+    const error = new Error('Gateway unavailable') as Error & { status: number };
+    error.status = 504;
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('service_unavailable');
+  });
+
+  it('should classify unauthorized message as auth error', () => {
+    const error = new Error('unauthorized access');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('auth');
+  });
+
+  it('should classify invalid token message as auth error', () => {
+    const error = new Error('invalid token provided');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('auth');
+  });
+
+  it('should classify 403 with policy message as content_policy', () => {
+    const error = new Error('policy violation detected') as Error & { status: number };
+    error.status = 403;
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('content_policy');
+    expect(result.userMessage).toBe('Content violates platform policies');
+  });
+
+  it('should classify 403 without policy message as auth error', () => {
+    const error = new Error('Forbidden') as Error & { status: number };
+    error.status = 403;
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('auth');
+  });
+
+  it('should classify validation message as validation error', () => {
+    const error = new Error('validation failed');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('validation');
+  });
+
+  it('should classify invalid message as validation error', () => {
+    const error = new Error('invalid input');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('validation');
+  });
+
+  it('should classify quota message as quota_exceeded', () => {
+    const error = new Error('quota exceeded');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('quota_exceeded');
+  });
+
+  it('should classify limit exceeded message as quota_exceeded', () => {
+    const error = new Error('limit exceeded for this account');
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(false);
+    expect(result.category).toBe('quota_exceeded');
+  });
+
+  it('should use response.status when status is not available', () => {
+    const error = new Error('Server error') as Error & { response?: { status: number } };
+    error.response = { status: 503 };
+    const result = classifyError(error);
+
+    expect(result.retryable).toBe(true);
+    expect(result.category).toBe('service_unavailable');
+  });
+});
+
+describe('NotFoundError', () => {
+  it('should create not found error', () => {
+    const error = new NotFoundError('Resource not found');
+
+    expect(error.message).toBe('Resource not found');
+    expect(error.retryable).toBe(false);
+    expect(error.category).toBe('not_found');
+    expect(error.name).toBe('NotFoundError');
+  });
+});
+
+describe('QuotaExceededError', () => {
+  it('should create quota exceeded error', () => {
+    const error = new QuotaExceededError('Usage limit reached');
+
+    expect(error.message).toBe('Usage limit reached');
+    expect(error.retryable).toBe(false);
+    expect(error.category).toBe('quota_exceeded');
+    expect(error.name).toBe('QuotaExceededError');
+  });
+});
+
+describe('getUserFriendlyMessage', () => {
+  it('should return user-friendly message for error', () => {
+    const error = new Error('network error');
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.network);
+  });
+
+  it('should replace platform placeholder with actual platform', () => {
+    const error = new ContentPolicyError('Content violates policy', 'FACEBOOK');
+    const message = getUserFriendlyMessage(error, 'Facebook');
+
+    expect(message).toBe('Content violates Facebook policies. Please modify and try again.');
+  });
+
+  it('should return rate limit message for rate limit error', () => {
+    const error = new RateLimitError('Rate limited', 60000);
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.rate_limit);
+  });
+
+  it('should return auth message for auth error', () => {
+    const error = new AuthError('Token expired', true);
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.auth);
+  });
+
+  it('should return validation message for validation error', () => {
+    const error = new Error('validation failed');
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.validation);
+  });
+
+  it('should return not found message for not found error', () => {
+    const error = new NotFoundError('Item not found');
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.not_found);
+  });
+
+  it('should return quota exceeded message for quota error', () => {
+    const error = new QuotaExceededError('Limit reached');
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.quota_exceeded);
+  });
+
+  it('should return service unavailable message for 503 error', () => {
+    const error = new Error('Service down') as Error & { status: number };
+    error.status = 503;
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.service_unavailable);
+  });
+
+  it('should return unknown message for unknown error', () => {
+    const error = new Error('Some random error');
+    const message = getUserFriendlyMessage(error);
+
+    expect(message).toBe(USER_FRIENDLY_MESSAGES.unknown);
   });
 });
