@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Building2, Plus, Check, Loader2 } from 'lucide-react';
 import { orgClient, useSession } from '@/lib/auth-client';
@@ -145,7 +146,13 @@ export default function OrganizationPage() {
               >
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   {org.logo ? (
-                    <img src={org.logo} alt={org.name} className="h-8 w-8 rounded" />
+                    <Image
+                      src={org.logo}
+                      alt={org.name}
+                      width={32}
+                      height={32}
+                      className="rounded"
+                    />
                   ) : (
                     <Building2 className="h-5 w-5 text-primary" />
                   )}

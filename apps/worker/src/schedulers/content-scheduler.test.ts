@@ -44,6 +44,7 @@ describe('ContentScheduler', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scheduler = createContentScheduler(mockDeps as any);
   });
 

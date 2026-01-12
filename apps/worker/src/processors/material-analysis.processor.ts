@@ -122,7 +122,7 @@ export function createMaterialAnalysisProcessor(deps: MaterialAnalysisProcessorD
           summary: analysis.summary,
           keyPoints: analysis.keyPoints,
           keywords: analysis.keywords,
-          suggestedAngles: analysis.suggestedAngles as any, // Type cast for enum array
+          suggestedAngles: analysis.suggestedAngles as string[],
           sentiment: analysis.sentiment,
           contentPillar: analysis.contentType,
           embeddingId,

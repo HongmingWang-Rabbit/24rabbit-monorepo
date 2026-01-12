@@ -61,6 +61,7 @@ describe('AnalyticsProcessor', () => {
 
   beforeEach(() => {
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     processor = createAnalyticsProcessor(mockDeps as any);
 
     vi.mock('@24rabbit/shared', () => ({

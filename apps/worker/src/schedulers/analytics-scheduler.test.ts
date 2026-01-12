@@ -36,6 +36,7 @@ describe('AnalyticsScheduler', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scheduler = createAnalyticsScheduler(mockDeps as any);
   });
 

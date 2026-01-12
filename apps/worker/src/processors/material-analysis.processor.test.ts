@@ -63,6 +63,7 @@ describe('MaterialAnalysisProcessor', () => {
 
   beforeEach(() => {
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     processor = createMaterialAnalysisProcessor(mockDeps as any);
   });
 

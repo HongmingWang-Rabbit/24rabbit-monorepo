@@ -84,6 +84,7 @@ describe('PublishProcessor', () => {
 
   beforeEach(() => {
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     processor = createPublishProcessor(mockDeps as any);
 
     // Mock decrypt function

@@ -1,7 +1,15 @@
 import { betterAuth } from 'better-auth';
 import { organization } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db, user, session, account, verification } from '@24rabbit/database';
+import {
+  db,
+  user,
+  session,
+  account,
+  verification,
+  organizations,
+  organizationMembers,
+} from '@24rabbit/database';
 import {
   SESSION_EXPIRES_IN,
   SESSION_UPDATE_AGE,
@@ -43,6 +51,8 @@ export const auth = betterAuth({
       session,
       account,
       verification,
+      organization: organizations,
+      member: organizationMembers,
     },
   }),
 

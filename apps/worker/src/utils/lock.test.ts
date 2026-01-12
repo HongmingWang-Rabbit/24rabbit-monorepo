@@ -68,6 +68,7 @@ describe('DistributedLock', () => {
 
   beforeEach(() => {
     mockRedis = createMockRedis();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock = new DistributedLock(mockRedis as any, 'test-worker');
   });
 
@@ -84,6 +85,7 @@ describe('DistributedLock', () => {
       await lock.acquire('test-lock', 60);
 
       // Create another lock instance (simulating another worker)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const otherLock = new DistributedLock(mockRedis as any, 'other-worker');
 
       // Second acquisition should fail
@@ -211,6 +213,7 @@ describe('withLock', () => {
 
   beforeEach(() => {
     mockRedis = createMockRedis();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock = new DistributedLock(mockRedis as any, 'test-worker');
   });
 
@@ -264,6 +267,7 @@ describe('LOCK_KEYS', () => {
 describe('createDistributedLock', () => {
   it('should create a DistributedLock instance', () => {
     const mockRedis = createMockRedis();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lock = createDistributedLock({ redis: mockRedis as any });
 
     expect(lock).toBeInstanceOf(DistributedLock);
@@ -272,6 +276,7 @@ describe('createDistributedLock', () => {
   it('should accept custom worker ID', () => {
     const mockRedis = createMockRedis();
     const lock = createDistributedLock({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       redis: mockRedis as any,
       workerId: 'custom-worker',
     });

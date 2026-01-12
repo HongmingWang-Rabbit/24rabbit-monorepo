@@ -68,6 +68,7 @@ describe('ContentGenerationProcessor', () => {
 
   beforeEach(() => {
     mockDeps = createMockDeps();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     processor = createContentGenerationProcessor(mockDeps as any);
   });
 

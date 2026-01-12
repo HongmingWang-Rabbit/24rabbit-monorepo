@@ -42,6 +42,7 @@ describe('RateLimiterService', () => {
 
   beforeEach(() => {
     mockRedis = createMockRedis();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rateLimiter = createRateLimiterService({ redis: mockRedis as any });
   });
 
