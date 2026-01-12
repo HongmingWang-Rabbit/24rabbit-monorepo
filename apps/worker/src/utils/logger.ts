@@ -35,7 +35,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 };
 
 function shouldLog(level: LogLevel): boolean {
-  const configuredLevel = config.logging.level as LogLevel;
+  const configuredLevel = (config.logLevel ?? 'info') as LogLevel;
   return LOG_LEVELS[level] >= LOG_LEVELS[configuredLevel];
 }
 
