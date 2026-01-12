@@ -1,10 +1,12 @@
 import { pgTable, text, boolean, timestamp, integer, unique } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
-import { users } from './users';
+import { user } from './auth';
 import { memberRole, subscriptionTier, subscriptionStatus, creditAction } from './enums';
 
 export const organizations = pgTable('organizations', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   logo: text('logo'),
@@ -14,23 +16,34 @@ export const organizations = pgTable('organizations', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
-export const organizationMembers = pgTable('organization_members', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
-    .references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  role: memberRole('role').notNull().default('MEMBER'),
-  invitedAt: timestamp('invited_at'),
-  joinedAt: timestamp('joined_at').defaultNow(),
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  uniqueMember: unique().on(table.organizationId, table.userId),
-}));
+export const organizationMembers = pgTable(
+  'organization_members',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    role: memberRole('role').notNull().default('MEMBER'),
+    invitedAt: timestamp('invited_at'),
+    joinedAt: timestamp('joined_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    uniqueMember: unique().on(table.organizationId, table.userId),
+  })
+);
 
 export const subscriptions = pgTable('subscriptions', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' })
     .unique(),
   tier: subscriptionTier('tier').notNull().default('FREE'),
@@ -45,11 +58,13 @@ export const subscriptions = pgTable('subscriptions', {
 });
 
 export const creditTransactions = pgTable('credit_transactions', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id),
-  subscriptionId: text('subscription_id')
-    .references(() => subscriptions.id),
+  subscriptionId: text('subscription_id').references(() => subscriptions.id),
   amount: integer('amount').notNull(),
   action: creditAction('action').notNull(),
   description: text('description'),

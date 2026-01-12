@@ -1,31 +1,59 @@
 import { betterAuth } from 'better-auth';
 import { organization } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db } from '@24rabbit/database';
+import { db, user, session, account, verification } from '@24rabbit/database';
+import {
+  SESSION_EXPIRES_IN,
+  SESSION_UPDATE_AGE,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  IS_PRODUCTION,
+  getTrustedOrigins,
+} from './constants/auth';
+
+// Build social providers config only if credentials are provided
+type SocialProviders = Parameters<typeof betterAuth>[0]['socialProviders'];
+
+function getSocialProviders(): SocialProviders {
+  const providers: SocialProviders = {};
+
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.google = {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      scope: ['email', 'profile'],
+    };
+  }
+
+  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+    providers.github = {
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    };
+  }
+
+  return providers;
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
+    schema: {
+      user,
+      session,
+      account,
+      verification,
+    },
   }),
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Set to true in production
-    minPasswordLength: 8,
-    maxPasswordLength: 128,
+    requireEmailVerification: IS_PRODUCTION,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
   },
 
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      scope: ['email', 'profile'],
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID || '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-    },
-  },
+  socialProviders: getSocialProviders(),
 
   plugins: [
     organization({
@@ -34,11 +62,11 @@ export const auth = betterAuth({
   ],
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Update every 24 hours
+    expiresIn: SESSION_EXPIRES_IN,
+    updateAge: SESSION_UPDATE_AGE,
   },
 
-  trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'],
+  trustedOrigins: getTrustedOrigins(),
 });
 
 export type Auth = typeof auth;

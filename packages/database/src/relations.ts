@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { users } from './schema/users';
+import { user, session, account, verification } from './schema/auth';
 import {
   organizations,
   organizationMembers,
@@ -17,8 +17,26 @@ import { posts, pendingPosts } from './schema/post';
 import { contentEmbeddings } from './schema/embedding';
 
 // User relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   organizationMemberships: many(organizationMembers),
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+// Session relations
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+// Account relations (OAuth providers)
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
 }));
 
 // Organization relations
@@ -43,9 +61,9 @@ export const organizationMembersRelations = relations(organizationMembers, ({ on
     fields: [organizationMembers.organizationId],
     references: [organizations.id],
   }),
-  user: one(users, {
+  user: one(user, {
     fields: [organizationMembers.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }));
 

@@ -74,7 +74,10 @@ export default async function RootLayout({ children, params }: RootLayoutProps) 
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${poppins.variable} ${openSans.variable} font-body antialiased`}>
+      <body
+        className={`${poppins.variable} ${openSans.variable} font-body antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
