@@ -10,6 +10,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/seed.ts",
     "db:studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "clean": "rimraf node_modules .turbo"
   },

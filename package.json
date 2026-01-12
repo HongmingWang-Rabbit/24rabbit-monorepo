@@ -5,18 +5,42 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "test": "turbo run test",
+    "lint:fix": "turbo run lint -- --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "db:generate": "turbo run db:generate --filter=@24rabbit/database",
     "db:push": "turbo run db:push --filter=@24rabbit/database",
     "db:migrate": "turbo run db:migrate --filter=@24rabbit/database",
     "db:seed": "turbo run db:seed --filter=@24rabbit/database",
     "db:studio": "turbo run db:studio --filter=@24rabbit/database",
-    "clean": "turbo run clean && rimraf node_modules .turbo"
+    "clean": "turbo run clean && rimraf node_modules .turbo",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@vitest/coverage-v8": "^4.0.16",
+    "eslint-config-prettier": "^10.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "rimraf": "^6.0.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
-    "rimraf": "^6.0.0"
+    "typescript-eslint": "^8.52.0",
+    "vitest": "^4.0.16"
   }
 }
