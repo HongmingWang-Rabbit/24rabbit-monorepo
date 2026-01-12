@@ -59,4 +59,4 @@ Traditional: User wants to post → Manual creation → Manual publishing
 
 ---
 
-*Document Version: v2.0 | Last Updated: 2026-01-09*
+*Document Version: v3.0 | Last Updated: 2026-01-10*

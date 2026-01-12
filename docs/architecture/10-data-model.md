@@ -55,7 +55,7 @@ CreditTransaction {
 SocialAccount {
   id: string
   userId: string
-  platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram' | 'youtube' | 'reddit'
+  platform: 'FACEBOOK' | 'TWITTER' | 'LINKEDIN' | 'INSTAGRAM' | 'YOUTUBE' | 'REDDIT' | 'THREADS'
   accountId: string             // Platform-specific ID
   accountName: string           // Display name
   accountType: 'personal' | 'page' | 'business'
@@ -74,22 +74,59 @@ SocialAccount {
 BrandProfile {
   id: string
   userId: string
-  name: string                  // Brand name
-  tagline: string
-  industry: string
-  targetAudience: string[]
-  tone: string                  // Content tone/voice
-  topics: string[]              // Core topics
-  sellingPoints: string[]
-  forbiddenWords: string[]
-  language: string              // Primary language
-  website?: string
+
+  // Identity (Visual)
+  name: string
+  logo?: string                 // R2 URL
+  icon?: string                 // R2 URL
+  colors: {
+    primary: string             // "#6366F1"
+    secondary: string           // "#EC4899"
+    accent: string              // "#10B981"
+    background: string          // "#FFFFFF"
+    text: string                // "#1F2937"
+  }
+  visualStyle: 'minimal' | 'bold' | 'playful' | 'corporate' | 'luxury' | 'tech'
+  fontPreference: 'modern' | 'classic' | 'handwritten' | 'monospace'
+
+  // Voice (Tone & Language)
+  tone: string[]                // ["witty", "confident", "friendly"]
+  personality: string           // "A smart friend who simplifies tech"
+  languageRules: {
+    wordsToUse: string[]        // ["ship", "build", "craft"]
+    wordsToAvoid: string[]      // ["synergy", "leverage"]
+    emojiUsage: 'none' | 'minimal' | 'moderate' | 'heavy'
+    hashtagStyle: 'none' | 'minimal' | 'moderate' | 'heavy'
+    ctaStyle: 'none' | 'soft' | 'direct'
+  }
+  examplePosts: Array<{
+    platform: Platform
+    content: string
+  }>
+
+  // Context (Custom Instructions)
+  customContext: string         // Free-form user instructions
+  targetAudience: string        // "HR managers at mid-size companies"
+  contentPillars: Array<{
+    name: string                // "Product Updates"
+    percentage: number          // 40
+  }>
+
+  // Platform Settings (per-platform overrides)
+  platformSettings: {
+    [platform: Platform]: {
+      enabled: boolean
+      toneOverride?: string[]
+      customContextOverride?: string
+      hashtagsDefault?: string[]
+    }
+  }
 
   // Publishing Settings
   requireApproval: boolean
   notifyEmail?: string
   notifyWebhook?: string
-  approvalTimeout: number       // Hours
+  approvalTimeout: number       // Hours (default: 24)
 
   // Trending Settings
   trendingEnabled: boolean
@@ -99,14 +136,11 @@ BrandProfile {
     minRelevance: number
   }
 
-  // Platform-specific instructions
-  platformInstructions: {
-    [platform: string]: string
-  }
-
   createdAt: Date
   updatedAt: Date
 }
+
+type Platform = 'TWITTER' | 'LINKEDIN' | 'FACEBOOK' | 'INSTAGRAM' | 'THREADS'
 ```
 
 ### Schedule
@@ -114,13 +148,16 @@ BrandProfile {
 ```typescript
 Schedule {
   id: string
-  brandProfileId: string
-  cronExpression: string        // e.g., "0 9 * * *"
-  timezone: string              // e.g., "America/Vancouver"
+  brandProfileId: string        // FK → BrandProfile
+  platforms: Platform[]         // ["TWITTER", "LINKEDIN"]
+  frequency: '1_per_day' | '2_per_day' | '3_per_day' | 'weekly' | 'custom'
+  times: string[]               // ["09:00", "17:00"]
+  timezone: string              // "America/Vancouver"
+  daysOfWeek: number[]          // [1,2,3,4,5] (Mon-Fri, 0=Sun)
+  materialStrategy: 'round_robin' | 'random' | 'weighted' | 'pillar_balanced'
+  autoApprove: boolean          // Skip manual review
+  uniquePerPlatform: boolean    // Generate unique content per platform
   isActive: boolean
-  platforms: string[]           // Target platforms
-  contentSource: 'auto' | 'material_only' | 'trending_only'
-  lastRunAt?: Date
   nextRunAt: Date
   createdAt: Date
   updatedAt: Date
@@ -132,22 +169,28 @@ Schedule {
 ```typescript
 Material {
   id: string
-  userId: string
-  brandProfileId: string
-  type: 'video' | 'image' | 'text'
-  originalUrl: string           // S3/storage URL
-  processedAssets: {
-    thumbnails?: string[]
-    platformSizes?: { [size: string]: string }
-  }
-  metadata: {
-    duration?: number           // Video duration
-    dimensions?: { width: number, height: number }
-    analysis?: string           // AI analysis result
-  }
-  tags: string[]
-  status: 'unused' | 'used_once' | 'used_multiple'
-  usedCount: number
+  userId: string                // FK → User
+  brandProfileId?: string       // FK → BrandProfile (optional)
+
+  // Source
+  type: 'TEXT' | 'URL' | 'FILE' | 'IMAGE' | 'VIDEO'
+  originalContent: string       // Raw text content
+  fileKey?: string              // R2 path, if file
+  url?: string                  // If URL type
+
+  // AI Analysis Results
+  summary: string               // AI-generated summary
+  keyPoints: string[]           // Extracted key points
+  keywords: string[]            // Extracted keywords
+  suggestedAngles: string[]     // AI-suggested content angles
+  contentType?: string          // Detected content type
+  sentiment?: string            // Detected sentiment
+
+  // Status & Usage
+  status: 'UPLOADED' | 'PROCESSING' | 'ANALYZED' | 'READY' | 'USED' | 'ARCHIVED'
+  usageCount: number            // How many times used
+  lastUsedAt?: Date             // Last usage timestamp
+
   createdAt: Date
   updatedAt: Date
 }
@@ -175,65 +218,74 @@ ExternalSource {
 }
 ```
 
-### Post
+### PendingPost
 
 ```typescript
-Post {
+PendingPost {
   id: string
-  userId: string
-  brandProfileId: string
-  scheduleId?: string
-  materialId?: string
+  userId: string                // FK → User
+  brandProfileId: string        // FK → BrandProfile
+  materialId: string            // FK → Material
+  platform: Platform
 
-  // Content
-  content: string
-  mediaUrls: string[]
-  contentType: 'text' | 'image' | 'video' | 'carousel'
-  sourceType: 'ai_generated' | 'trending' | 'rewrite' | 'manual'
+  // Generated Variations (3)
+  variations: Array<{
+    content: string
+    angle: string               // "product focus" | "user benefit" | "storytelling"
+    hashtags: string[]
+    characterCount: number
+  }>
+  selectedVariation: number     // 0, 1, or 2
+  finalContent: string          // After user edits (if any)
 
-  // Publishing
-  platform: string
-  platformPostId?: string       // ID returned by platform
-  status: 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'failed'
-  scheduledAt?: Date
-  publishedAt?: Date
-  failureReason?: string
+  // Scheduling
+  scheduledFor: Date
+  generationMode: 'autopilot' | 'manual'
 
-  // Analytics
-  metrics?: {
-    likes: number
-    comments: number
-    shares: number
-    impressions: number
-    clicks: number
-    fetchedAt: Date
-  }
+  // Status
+  status: 'DRAFT' | 'PENDING' | 'AUTO_APPROVED' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'FAILED'
+  reviewNotes?: string          // User's notes when rejecting
 
-  // Credit tracking
-  creditsUsed: number
+  // Embedding for similarity
+  embedding: vector(768)
 
   createdAt: Date
   updatedAt: Date
 }
 ```
 
-### PendingPost
+### Post
 
 ```typescript
-PendingPost {
+Post {
   id: string
-  brandProfileId: string
-  generatedContent: string
-  suggestedMediaUrls?: string[]
-  sourceType: 'ai_generated' | 'trending' | 'rewrite'
-  sourceMaterial?: string       // Original material if rewrite
-  trendingTopic?: string        // Topic if trending-based
-  targetPlatforms: string[]
-  status: 'pending' | 'approved' | 'rejected' | 'expired'
-  expiresAt: Date               // 24-hour expiry
-  reviewedAt?: Date
-  reviewNote?: string
+  userId: string                // FK → User
+  socialAccountId: string       // FK → SocialAccount
+  pendingPostId: string         // FK → PendingPost
+  materialId?: string           // FK → Material
+  platform: Platform
+
+  // Content
+  content: string
+  mediaUrls: string[]           // R2 URLs
+
+  // Platform Reference
+  externalId: string            // Platform's post ID
+  publishedAt: Date
+
+  // Metrics (updated hourly)
+  likes: number
+  comments: number
+  shares: number
+  impressions: number
+  reach: number
+  clicks: number
+
+  // Embedding for similarity
+  embedding: vector(768)
+
   createdAt: Date
+  updatedAt: Date
 }
 ```
 
@@ -242,12 +294,13 @@ PendingPost {
 ```typescript
 ContentEmbedding {
   id: string
-  userId: string
-  postId: string
-  platform: string
+  userId: string                // FK → User
+  contentType: 'material' | 'pending_post' | 'post'
+  contentId: string             // Polymorphic FK
   embedding: vector(768)        // pgvector
-  contentHash: string           // Quick comparison
+  contentHash: string           // For quick dedup check
   createdAt: Date
+  updatedAt: Date
 }
 ```
 
@@ -263,17 +316,30 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE content_embeddings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
-  post_id UUID REFERENCES posts(id),
-  platform VARCHAR(50),
+  content_type VARCHAR(50),
+  content_id UUID,
   embedding vector(768),
   content_hash VARCHAR(64),
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Index for similarity search
+-- Index for similarity search (cosine distance)
 CREATE INDEX ON content_embeddings
 USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 100);
+```
+
+### Similarity Query Example
+
+```sql
+-- Find similar content within last 30 days
+SELECT *
+FROM content_embeddings
+WHERE user_id = $1
+AND created_at > NOW() - INTERVAL '30 days'
+ORDER BY embedding <=> $2  -- cosine distance
+LIMIT 5;
 ```
 
 ### Encryption
@@ -289,6 +355,7 @@ WITH (lists = 100);
 CREATE INDEX idx_social_accounts_user ON social_accounts(user_id);
 CREATE INDEX idx_brand_profiles_user ON brand_profiles(user_id);
 CREATE INDEX idx_posts_user ON posts(user_id);
+CREATE INDEX idx_materials_user ON materials(user_id);
 
 -- Status queries
 CREATE INDEX idx_posts_status ON posts(status);
@@ -298,6 +365,11 @@ CREATE INDEX idx_materials_status ON materials(status);
 -- Time-based queries
 CREATE INDEX idx_posts_published_at ON posts(published_at);
 CREATE INDEX idx_schedules_next_run ON schedules(next_run_at);
+CREATE INDEX idx_materials_last_used ON materials(last_used_at);
+
+-- Composite indexes
+CREATE INDEX idx_pending_posts_user_status ON pending_posts(user_id, status);
+CREATE INDEX idx_materials_user_status ON materials(user_id, status);
 ```
 
 ### Soft Delete
@@ -320,9 +392,52 @@ User
  │    ├── Schedule (1:N)
  │    ├── Material (1:N)
  │    ├── ExternalSource (1:N)
- │    ├── Post (1:N)
  │    └── PendingPost (1:N)
+ ├── Material (1:N) - user can have materials without brand
+ ├── Post (1:N)
  └── ContentEmbedding (1:N)
+
+PendingPost
+ ├── BrandProfile (N:1)
+ ├── Material (N:1)
+ └── Post (1:1) - when published
+
+Post
+ ├── User (N:1)
+ ├── SocialAccount (N:1)
+ ├── PendingPost (1:1)
+ └── Material (N:1)
+```
+
+## Status Enums
+
+### Material Status
+
+| Status | Description |
+|--------|-------------|
+| `UPLOADED` | Just uploaded, pending processing |
+| `PROCESSING` | Being analyzed by AI |
+| `ANALYZED` | Analysis complete, pending embedding |
+| `READY` | Ready for content generation |
+| `USED` | Used in at least one post |
+| `ARCHIVED` | User archived, won't be selected |
+
+### PendingPost Status
+
+| Status | Description |
+|--------|-------------|
+| `DRAFT` | Initial creation, not complete |
+| `PENDING` | Waiting for user review/action |
+| `AUTO_APPROVED` | Auto-approved via autopilot |
+| `APPROVED` | User approved, ready to publish |
+| `REJECTED` | User rejected |
+| `PUBLISHED` | Successfully published |
+| `FAILED` | Publishing failed after retries |
+
+### Platform Enum
+
+```typescript
+type Platform = 'TWITTER' | 'LINKEDIN' | 'FACEBOOK' | 'INSTAGRAM' | 'YOUTUBE' | 'REDDIT' | 'THREADS'
 ```
 
 ---

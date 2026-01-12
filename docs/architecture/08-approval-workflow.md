@@ -1,63 +1,125 @@
 # Approval Workflow
 
-## Approval Mode (User Configurable)
+## Overview
 
-Users can choose whether AI-generated content requires manual approval before publishing.
-
-```
-Brand Profile Settings:
-┌─────────────────────────────────────────────────┐
-│  Approval Settings                               │
-│  ┌─────────────────────────────────────────┐   │
-│  │  ☐ Auto-publish (no approval needed)     │   │
-│  │  ☑ Require approval before publish       │   │
-│  │                                          │   │
-│  │  Notification Method:                    │   │
-│  │  • Email: user@example.com               │   │
-│  │  • Webhook: https://...                  │   │
-│  │  • Dashboard notification                │   │
-│  └─────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────┘
-```
-
-## Approval Workflow
+After content generation, there are two possible paths based on the `autoApprove` setting:
 
 ```
-AI Generates Content
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│  Check: requireApproval == true?                 │
-│  ├── No  → Direct to publish queue              │
-│  └── Yes → Create PendingPost                   │
-└──────────────────┬──────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────┐
-│  Send Notification                               │
-│  • Email with preview link                       │
-│  • Webhook POST with content                     │
-│  • Dashboard badge notification                  │
-└──────────────────┬──────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────┐
-│  User Actions (within 24 hours)                  │
-│  ├── ✅ Approve → Publish immediately           │
-│  ├── ✏️ Edit → Modify then publish              │
-│  ├── ❌ Reject → Discard, optionally regenerate │
-│  └── ⏰ Timeout → Auto-expire (no publish)      │
-└─────────────────────────────────────────────────┘
+[Content Generation Complete]
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ Create PendingPost with 3 variations │
+└─────────────────────────────────────┘
+        │
+        ├── PATH A: AUTO-APPROVED ──────────────────────┐
+        │   (autoApprove = true)                        │
+        │                                               │
+        │   Status: AUTO_APPROVED                       │
+        │   When scheduledFor time arrives:             │
+        │   → Queue job: post:publish                   │
+        │   → Skip human review                         │
+        │                                               │
+        ├── PATH B: MANUAL REVIEW ──────────────────────┤
+        │   (autoApprove = false)                       │
+        │                                               │
+        │   Status: PENDING                             │
+        │   → User reviews in dashboard                 │
+        │   → Selects/edits/approves                    │
+        │   → Status changes to APPROVED                │
+        │                                               │
+        └───────────────────────────────────────────────┘
+                        │
+                        ▼
+                [Scheduled time arrives]
+                        │
+                        ▼
+                [Queue: post:publish]
 ```
 
-## Pending Post Status
+## Manual Review Flow
+
+When `autoApprove = false`, users see a review interface:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  User Dashboard shows:                              │
+│  ├── 3 variation cards                              │
+│  ├── Select favorite (radio)                        │
+│  ├── Edit button (modify content)                   │
+│  ├── Regenerate button (new 3)                      │
+│  ├── Approve button → APPROVED                      │
+│  └── Reject button → REJECTED                       │
+│                                                     │
+│  On Approve:                                        │
+│  → Status = APPROVED                                │
+│  → finalContent = selected/edited                   │
+│  → Queue job when scheduled                         │
+└─────────────────────────────────────────────────────┘
+```
+
+## PendingPost Status States
 
 | Status | Description |
 |--------|-------------|
-| `pending` | Waiting for user action |
-| `approved` | User approved, moving to publish |
-| `rejected` | User rejected |
-| `expired` | 24-hour timeout, auto-expired |
+| `DRAFT` | Initial creation, not complete |
+| `PENDING` | Waiting for user review/action |
+| `AUTO_APPROVED` | Auto-approved via autopilot, ready to publish |
+| `APPROVED` | User approved, ready to publish |
+| `REJECTED` | User rejected |
+| `PUBLISHED` | Successfully published to platform |
+| `FAILED` | Publishing failed after retries |
+
+## PendingPost Data Structure
+
+```typescript
+PendingPost {
+  id: string
+  userId: string
+  brandProfileId: string
+  materialId: string
+  platform: Platform
+
+  // 3 variations generated by AI
+  variations: Array<{
+    content: string
+    angle: string      // "product focus" | "user benefit" | "storytelling"
+    hashtags: string[]
+  }>
+
+  selectedVariation: number    // 0, 1, or 2
+  finalContent: string         // After user edits (if any)
+
+  scheduledFor: Date
+  generationMode: 'autopilot' | 'manual'
+  status: PendingPostStatus
+  reviewNotes?: string         // User's notes when rejecting
+
+  embedding: vector(768)       // For similarity checking
+
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+## Approval Mode Configuration
+
+Users configure approval settings in their BrandProfile or Schedule:
+
+```typescript
+// In Schedule
+Schedule {
+  autoApprove: boolean         // If true, skip manual review
+}
+
+// In BrandProfile (default for all schedules)
+BrandProfile {
+  requireApproval: boolean     // Default approval requirement
+  notifyEmail?: string         // Email for notifications
+  notifyWebhook?: string       // Webhook URL for integrations
+  approvalTimeout: number      // Hours before expiry (default: 24)
+}
+```
 
 ## Notification Methods
 
@@ -75,6 +137,7 @@ AI has generated new content for {brandName}:
 ---
 
 Platform: {targetPlatforms}
+Scheduled: {scheduledFor}
 Expires: {expiresAt}
 
 [Approve] [Edit] [Reject]
@@ -89,11 +152,15 @@ Expires: {expiresAt}
   data: {
     pendingPostId: "pp_123",
     brandProfileId: "bp_456",
-    content: "AI generated content here...",
-    mediaUrls: ["https://..."],
-    targetPlatforms: ["facebook", "twitter"],
-    sourceType: "ai_generated",
-    expiresAt: "2026-01-10T09:00:00Z"
+    variations: [
+      { content: "...", angle: "product focus" },
+      { content: "...", angle: "user benefit" },
+      { content: "...", angle: "storytelling" }
+    ],
+    platform: "TWITTER",
+    scheduledFor: "2026-01-10T17:00:00Z",
+    generationMode: "autopilot",
+    expiresAt: "2026-01-11T09:00:00Z"
   }
 }
 ```
@@ -104,65 +171,98 @@ Expires: {expiresAt}
 - Toast notification when new content is ready
 - Email digest option (daily summary)
 
-## Approval Actions
+## User Actions
 
-### Approve
+### 1. Select Variation
+
+User can choose between the 3 generated variations:
 
 ```typescript
-POST /api/pending-posts/{id}/approve
-
-// Result:
-// 1. PendingPost status → 'approved'
-// 2. Create Post with status 'scheduled'
-// 3. Add to publish queue
-// 4. Deduct credits
+POST /api/pending-posts/{id}/select
+{
+  variationIndex: 1  // 0, 1, or 2
+}
 ```
 
-### Edit & Approve
+### 2. Edit & Approve
+
+User can modify the content before approving:
 
 ```typescript
 POST /api/pending-posts/{id}/approve
 {
-  editedContent: "Modified content here...",
-  editedMedia: ["https://..."]
+  editedContent?: "Modified content here...",
+  editedHashtags?: ["tag1", "tag2"]
 }
 
 // Result:
-// 1. Update content before publishing
-// 2. Same flow as approve
+// 1. Update finalContent if edited
+// 2. PendingPost status → 'APPROVED'
+// 3. Queue publish job for scheduledFor time
 ```
 
-### Reject
+### 3. Regenerate
+
+Request 3 new variations:
+
+```typescript
+POST /api/pending-posts/{id}/regenerate
+{
+  instructions?: "Make it more casual"  // Optional guidance
+}
+
+// Result:
+// 1. Generate 3 new variations
+// 2. Update PendingPost.variations
+// 3. Status remains PENDING
+```
+
+### 4. Reject
+
+Discard the content:
 
 ```typescript
 POST /api/pending-posts/{id}/reject
 {
-  reason: "Not suitable for brand",  // optional
-  regenerate: true                    // optional
+  reason?: "Not suitable for brand tone",
+  regenerate?: true  // Optional: trigger new generation
 }
 
 // Result:
-// 1. PendingPost status → 'rejected'
-// 2. If regenerate=true, trigger new generation
-// 3. No credits deducted
+// 1. PendingPost status → 'REJECTED'
+// 2. If regenerate=true, create new PendingPost
+// 3. No credits deducted (generation credits already used)
 ```
 
-## Configuration Options
+### 5. Reschedule
+
+Change the scheduled publish time:
 
 ```typescript
-BrandProfile {
-  // Approval settings
-  requireApproval: boolean      // Enable/disable
-  notifyEmail?: string          // Email for notifications
-  notifyWebhook?: string        // Webhook URL
-  approvalTimeout: number       // Hours before expiry (default: 24)
-
-  // Auto-approve rules (future)
-  autoApproveRules?: {
-    minConfidence: number       // AI confidence threshold
-    excludeTopics: string[]     // Topics that always need review
-  }
+POST /api/pending-posts/{id}/reschedule
+{
+  scheduledFor: "2026-01-11T09:00:00Z"
 }
+```
+
+## Timeout Handling
+
+If approval is required but user doesn't act within `approvalTimeout` hours:
+
+```
+[PendingPost created]
+        │
+        ▼
+[Status: PENDING]
+        │
+        ▼
+    [Wait for user action]
+        │
+        ├── User approves → Status: APPROVED → Publish
+        ├── User rejects → Status: REJECTED → Done
+        └── Timeout (24h default) → Status: EXPIRED → Done
+                                  → No publish
+                                  → No credits returned
 ```
 
 ## User Interaction Example
@@ -171,31 +271,60 @@ BrandProfile {
 Schedule triggered at 9:00 AM
        │
        ▼
-AI generates content for OMECA
+AI generates 3 variations for OMECA
        │
        ▼
-┌─────────────────────────────────────────────────┐
-│  "OMECA 新品上市！不锈钢餐具套装..."             │
-│                                                 │
-│  [Approve] [Edit] [Reject]                      │
-│                                                 │
-│  Expires in 23:59:32                            │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  Variation 1 (Product Focus):                       │
+│  "OMECA's professional-grade stainless steel..."    │
+│                                                     │
+│  Variation 2 (User Benefit):                        │
+│  "Upgrade your kitchen efficiency with..."          │
+│                                                     │
+│  Variation 3 (Storytelling):                        │
+│  "Every great dish starts with great tools..."      │
+│                                                     │
+│  ○ Variation 1  ● Variation 2  ○ Variation 3       │
+│                                                     │
+│  [Edit] [Regenerate] [Approve] [Reject]            │
+│                                                     │
+│  Scheduled for: 5:00 PM today                       │
+│  Expires in: 23:59:32                               │
+└─────────────────────────────────────────────────────┘
        │
        ▼
 User clicks [Edit]
        │
        ▼
-┌─────────────────────────────────────────────────┐
-│  Edit content:                                   │
-│  "OMECA 新品上市！限时8折..."                    │
-│                                                 │
-│  [Save & Publish] [Cancel]                      │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  Edit content:                                       │
+│  ┌───────────────────────────────────────────────┐ │
+│  │ Upgrade your kitchen efficiency with OMECA's  │ │
+│  │ commercial-grade cookware. Now 15% off!       │ │
+│  └───────────────────────────────────────────────┘ │
+│                                                     │
+│  [Save & Approve] [Cancel]                          │
+└─────────────────────────────────────────────────────┘
        │
        ▼
-Published to Facebook, Twitter
+Published to Twitter at 5:00 PM
 ```
+
+## Best Practices
+
+### When to Use Auto-Approve
+
+- Established brands with consistent voice
+- High-trust schedules with well-defined brand guidelines
+- Time-sensitive campaigns where speed matters
+- Experienced users who have refined their brand profile
+
+### When to Require Manual Review
+
+- New brands still defining their voice
+- Sensitive industries (finance, healthcare)
+- Multi-stakeholder approval requirements
+- Testing new content strategies
 
 ---
 

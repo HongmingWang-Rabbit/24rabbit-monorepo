@@ -1,58 +1,101 @@
 # System Architecture
 
-## Overall Architecture
+## System Overview
+
+24Rabbit provides two entry points into the same content generation engine:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        User Actions                          │
-│              Upload Materials / Connect Sites / Configure    │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Content Sources                         │
-│         ┌──────────────────┬──────────────────┐            │
-│         │  Material Pool   │    External      │            │
-│         │  User uploads    │  E-commerce sites│            │
-│         └──────────────────┴──────────────────┘            │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 AI Scheduling Engine (Cron)                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  1. Check material pool → Any unused materials?      │   │
-│  │  2. Crawl connected sites → Any unmarketed products? │   │
-│  │  3. VectorDB dedup → Ensure no duplicate posts       │   │
-│  │  4. Select content → Generate → Publish              │   │
-│  └─────────────────────────────────────────────────────┘   │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  AI Processing Layer (Modular)               │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │                   AI Adapter Interface               │   │
-│  │  ┌─────────────┬─────────────┬─────────────┐       │   │
-│  │  │   Gemini    │   OpenAI    │   Claude    │  ...  │   │
-│  │  │  (Default)  │  (Adapter)  │  (Adapter)  │       │   │
-│  │  └─────────────┴─────────────┴─────────────┘       │   │
-│  └─────────────────────────────────────────────────────┘   │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Publishing Layer (MCP Server)              │
-│     ┌─────┬─────┬─────┬─────┬─────┬─────┐                 │
-│     │ YT  │  X  │ LI  │ RD  │ IG  │ FB  │                 │
-│     └─────┴─────┴─────┴─────┴─────┴─────┘                 │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        VectorDB                              │
-│              Records all published content for dedup         │
-└─────────────────────────────────────────────────────────────┘
+AUTOPILOT MODE (24/7 automated)          MANUAL MODE (user triggered)
+├── Schedule triggers automatically      ├── User selects material
+├── System selects materials             ├── User clicks "Generate"
+├── Auto-generates content               ├── Reviews 3 variations
+├── Optional: auto-approve and publish   ├── Edits if needed
+└── No human intervention required       └── Approves and schedules
+              │                                       │
+              └───────────────┬───────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────┐
+              │  CONTENT GENERATION ENGINE    │
+              │        (shared core)          │
+              └───────────────────────────────┘
+```
+
+## Complete System Flow
+
+```
+[User uploads material]
+        │
+        ▼
+[Queue: content:analyze]
+        │
+        ▼
+[AI Analysis + Embedding]
+        │
+        ▼
+[Material status: READY]
+        │
+        ├── AUTOPILOT PATH ────────────────┐
+        │   [Cron checks schedules]        │
+        │          │                       │
+        │          ▼                       │
+        │   [Select material]              │
+        │          │                       │
+        │          ▼                       │
+        │   [Similarity check]             │
+        │          │                       │
+        └──────────┴───────────────────────┘
+                   │
+                   ▼
+        [Queue: content:generate]
+                   │
+                   ▼
+        [Load context: Material + Brand + Recent Posts]
+                   │
+                   ▼
+        [Build prompt with all branding]
+                   │
+                   ▼
+        [Call Gemini AI]
+                   │
+                   ▼
+        [Validate + Similarity check]
+                   │
+                   ▼
+        [Create PendingPost with 3 variations]
+                   │
+                   ├── AUTO_APPROVED ──────┐
+                   │                       │
+                   ▼                       │
+        [User reviews in dashboard]        │
+        [Selects/edits/approves]           │
+                   │                       │
+                   ▼                       │
+        [Status: APPROVED] ◄───────────────┘
+                   │
+                   ▼
+        [Scheduled time arrives]
+                   │
+                   ▼
+        [Queue: post:publish]
+                   │
+                   ▼
+        [Rate limit check]
+                   │
+                   ▼
+        [Call platform API]
+                   │
+                   ▼
+        [Create Post record]
+                   │
+                   ▼
+        [Queue: analytics:collect (hourly)]
+                   │
+                   ▼
+        [Update metrics]
+                   │
+                   ▼
+        [Dashboard shows performance]
 ```
 
 ## AI Processing Layer - Modular Design
@@ -114,30 +157,24 @@ Each AI function is an independent module implemented through Adapter interfaces
 | | WebCrawler | Crawl e-commerce products | Firecrawl | Crawlee, Puppeteer |
 | | VideoProcessor | Video screenshots, transcoding | FFmpeg | Cloud services |
 
-## Mixed Configuration Example
+## Redis Queues & Jobs
 
-```yaml
-ai_config:
-  adapters:
-    image_analyzer: claude
-    video_analyzer: gemini
-    text_understanding: claude
-    copy_generator: claude
-    image_generator: midjourney
-    video_generator: veo
-    embedding_generator: openai
-    web_crawler: firecrawl
+### Queue Definitions
+
+| Queue | Trigger | Payload | Processor |
+|-------|---------|---------|-----------|
+| `content:analyze` | Material upload | `{materialId}` | ContentAnalyzer |
+| `content:generate` | Schedule or manual | `{materialId, brandProfileId, platforms[], mode, scheduledFor, autoApprove, uniquePerPlatform}` | ContentGenerator |
+| `post:publish` | Approved post at scheduled time | `{pendingPostId}` | PostPublisher |
+| `analytics:collect` | Hourly cron | `{userId}` or `{postIds[]}` | AnalyticsCollector |
+| `embedding:generate` | After content analysis or generation | `{contentType, contentId, content}` | EmbeddingGenerator |
+
+### Job States
+
 ```
-
-## Why Modular Design
-
-| Advantage | Description |
-|-----------|-------------|
-| Flexibility | Choose the best provider for each function |
-| Cost Optimization | Use cheaper models for less critical tasks |
-| Quality Optimization | Use best models for important tasks |
-| No Lock-in | Any module can be switched anytime |
-| Easy Extension | New models can be added via new Adapters |
+WAITING → ACTIVE → COMPLETED
+                 → FAILED → RETRY (max 3) → DEAD
+```
 
 ## Tech Stack
 

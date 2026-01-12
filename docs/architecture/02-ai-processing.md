@@ -1,5 +1,279 @@
 # AI Processing Workflows
 
+## Material Ingestion Pipeline
+
+### Input Types (4 Sources)
+
+| Source | Description |
+|--------|-------------|
+| Text Notes | Direct text input |
+| URL | Blog posts, articles |
+| Files | PDF, DOCX, TXT |
+| Images/Videos | Media files |
+
+### Ingestion Flow
+
+```
+[User Upload]
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ CONTENT EXTRACTOR                   │
+├─────────────────────────────────────┤
+│ Text → use directly                 │
+│ URL → scrape with Cheerio/Puppeteer │
+│ PDF/DOCX → parse with pdf-parse     │
+│ Image → describe with Gemini Vision │
+│ Video → transcribe with Whisper API │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ AI ANALYZER (Gemini)                │
+├─────────────────────────────────────┤
+│ Extract:                            │
+│ • summary (string)                  │
+│ • keyPoints (string[])              │
+│ • keywords (string[])               │
+│ • contentType (string)              │
+│ • suggestedAngles (string[])        │
+│ • sentiment (string)                │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ EMBEDDING GENERATOR (Gemini)        │
+├─────────────────────────────────────┤
+│ Generate 768-dimension vector       │
+│ Used for:                           │
+│ • Similarity detection              │
+│ • Duplicate prevention              │
+│ • Content clustering                │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ STORAGE                             │
+├─────────────────────────────────────┤
+│ PostgreSQL:                         │
+│ • Material record                   │
+│ • ContentEmbedding (pgvector)       │
+│                                     │
+│ Cloudflare R2:                      │
+│ • Original files                    │
+│ • Extracted images                  │
+└─────────────────────────────────────┘
+```
+
+### Material Status Flow
+
+```
+UPLOADED → PROCESSING → ANALYZED → READY → USED
+```
+
+## Content Generation Engine (Core)
+
+Worker picks up job from Redis queue: `content:generate`
+
+### Step 1: Load Context
+
+```
+┌─────────────────────────────────────┐
+│ Fetch from PostgreSQL:              │
+├─────────────────────────────────────┤
+│ • Material                          │
+│   - content, summary, keyPoints     │
+│   - suggestedAngles, keywords       │
+│                                     │
+│ • BrandProfile                      │
+│   - ALL branding data               │
+│   - customContext (user's text)     │
+│   - voice, tone, examples           │
+│   - platformSettings                │
+│                                     │
+│ • Recent Posts (last 20)            │
+│   - For variety/avoiding repetition │
+│                                     │
+│ • Platform Rules                    │
+│   - Character limits                │
+│   - Media requirements              │
+│   - Best practices                  │
+└─────────────────────────────────────┘
+```
+
+### Step 2: Build Prompt
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ PROMPT STRUCTURE                                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ SYSTEM: You are a social media content creator for {brand.name} │
+│                                                                 │
+│ ═══ BRAND CONTEXT ═══                                           │
+│ {brand.customContext}                                           │
+│ ← User's free-form instructions injected verbatim               │
+│                                                                 │
+│ ═══ TARGET AUDIENCE ═══                                         │
+│ {brand.targetAudience}                                          │
+│                                                                 │
+│ ═══ VOICE & TONE ═══                                            │
+│ Personality: {brand.personality}                                │
+│ Tone: {brand.tone.join(", ")}                                   │
+│ Words to USE: {brand.languageRules.wordsToUse.join(", ")}       │
+│ Words to AVOID: {brand.languageRules.wordsToAvoid.join(", ")}   │
+│ Emoji usage: {brand.languageRules.emojiUsage}                   │
+│ Hashtag style: {brand.languageRules.hashtagStyle}               │
+│ CTA style: {brand.languageRules.ctaStyle}                       │
+│                                                                 │
+│ ═══ EXAMPLE POSTS (Few-shot learning) ═══                       │
+│ {brand.examplePosts.map(p => p.content).join("\n")}             │
+│                                                                 │
+│ ═══ PLATFORM RULES ═══                                          │
+│ Platform: {platform}                                            │
+│ Character limit: {platformRules.charLimit}                      │
+│ {brand.platformSettings[platform].customContextOverride || ""}  │
+│                                                                 │
+│ ═══ RECENT POSTS (Avoid similarity) ═══                         │
+│ Do not repeat themes from these recent posts:                   │
+│ {recentPosts.map(p => "- " + p.content.slice(0,100)).join("\n")}│
+│                                                                 │
+│ ═══ SOURCE MATERIAL ═══                                         │
+│ {material.content}                                              │
+│                                                                 │
+│ Key points: {material.keyPoints.join(", ")}                     │
+│ Suggested angles: {material.suggestedAngles.join(", ")}         │
+│                                                                 │
+│ ═══ INSTRUCTIONS ═══                                            │
+│ Generate 3 unique variations for this platform.                 │
+│ Each variation must:                                            │
+│ - Use a different angle/hook                                    │
+│ - Match the brand voice exactly                                 │
+│ - Stay within character limits                                  │
+│ - Be ready to publish (no placeholders)                         │
+│                                                                 │
+│ Respond in JSON format:                                         │
+│ {                                                               │
+│   "variations": [                                               │
+│     {                                                           │
+│       "content": "...",                                         │
+│       "angle": "product focus | user benefit | storytelling",   │
+│       "hashtags": ["tag1", "tag2"],                             │
+│       "characterCount": 240                                     │
+│     }                                                           │
+│   ]                                                             │
+│ }                                                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Step 3: Call AI (Gemini)
+
+```
+┌─────────────────────────────────────┐
+│ API Call to Gemini                  │
+├─────────────────────────────────────┤
+│ Model: gemini-1.5-pro               │
+│ Temperature: 0.8 (creative)         │
+│ Response format: JSON               │
+│                                     │
+│ Response: {                         │
+│   variations: [                     │
+│     {content, angle, hashtags},     │
+│     {content, angle, hashtags},     │
+│     {content, angle, hashtags}      │
+│   ]                                 │
+│ }                                   │
+└─────────────────────────────────────┘
+```
+
+### Step 4: Validate Output
+
+```
+┌─────────────────────────────────────┐
+│ For each variation, check:          │
+├─────────────────────────────────────┤
+│ ✓ Within character limit?           │
+│ ✓ No banned words present?          │
+│ ✓ Required words included?          │
+│ ✓ Proper JSON structure?            │
+│ ✓ No placeholder text?              │
+│ ✓ Passes content policy?            │
+│                                     │
+│ If fails:                           │
+│ → Regenerate that variation         │
+│ → Max 3 retry attempts              │
+└─────────────────────────────────────┘
+```
+
+### Step 5: Similarity Check (Post-generation)
+
+```
+┌─────────────────────────────────────┐
+│ Generate embedding for each         │
+│ variation content                   │
+├─────────────────────────────────────┤
+│ Compare against recent posts:       │
+│                                     │
+│ Similarity scores:                  │
+│ 0.0 - 0.5 → Unique ✓                │
+│ 0.5 - 0.7 → Different enough ✓      │
+│ 0.7 - 0.85 → Similar, but OK ⚠      │
+│ 0.85 - 1.0 → Too similar ✗          │
+│             → Regenerate            │
+└─────────────────────────────────────┘
+```
+
+### Step 6: Platform Adaptation (if multi-platform)
+
+```
+┌─────────────────────────────────────┐
+│ If uniquePerPlatform = false:       │
+├─────────────────────────────────────┤
+│ Take best variation, adapt:         │
+│                                     │
+│ Twitter (280) → LinkedIn (3000)     │
+│ • Expand with more context          │
+│ • Add professional framing          │
+│ • Adjust hashtag style              │
+│ • Apply platform tone override      │
+│                                     │
+│ If uniquePerPlatform = true:        │
+│ → Run full generation per platform  │
+└─────────────────────────────────────┘
+```
+
+### Step 7: Store Results
+
+```
+┌─────────────────────────────────────┐
+│ Create PendingPost records          │
+├─────────────────────────────────────┤
+│ PendingPost {                       │
+│   userId                            │
+│   brandProfileId                    │
+│   materialId                        │
+│   platform                          │
+│                                     │
+│   variations: [                     │
+│     {content, angle, hashtags},     │
+│     {content, angle, hashtags},     │
+│     {content, angle, hashtags}      │
+│   ]                                 │
+│   selectedVariation: 0              │
+│   finalContent: variations[0]       │
+│                                     │
+│   scheduledFor: datetime            │
+│   generationMode: "autopilot"       │
+│                                     │
+│   status:                           │
+│   → "AUTO_APPROVED" if autoApprove  │
+│   → "PENDING" if needs review       │
+│                                     │
+│   embedding: vector(768)            │
+│ }                                   │
+└─────────────────────────────────────┘
+```
+
 ## Video Input Workflow
 
 ```
@@ -136,6 +410,56 @@ User inputs: "OMECA new product, stainless steel cutlery set, $49"
                   Content Generation → Publishing
 ```
 
+## Visual Content Generation (Future)
+
+When post needs visual:
+
+```
+[Content + Brand Profile]
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ TEMPLATE SELECTOR                   │
+├─────────────────────────────────────┤
+│ Template types:                     │
+│ • Quote Card                        │
+│ • Stats/Milestone Card              │
+│ • Announcement Card                 │
+│ • Tips List Card                    │
+│ • Behind the Scenes                 │
+│                                     │
+│ Selection based on:                 │
+│ • Content type                      │
+│ • Material category                 │
+│ • Platform requirements             │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ APPLY BRANDING                      │
+├─────────────────────────────────────┤
+│ From BrandProfile:                  │
+│ • colors.primary, secondary, accent │
+│ • logo / icon overlay               │
+│ • visualStyle affects layout        │
+│ • fontPreference for text           │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ RENDER IMAGE                        │
+├─────────────────────────────────────┤
+│ Options:                            │
+│ • HTML/CSS → Puppeteer screenshot   │
+│ • Cloudinary transformations        │
+│ • Canvas API rendering              │
+│ • AI generation (DALL-E/Midjourney) │
+└─────────────────────────────────────┘
+        │
+        ▼
+[Upload to R2, attach to post]
+```
+
 ## Generated Content Formats
 
 | Format | Description | Platforms |
@@ -164,6 +488,7 @@ User inputs: "OMECA new product, stainless steel cutlery set, $49"
 | LinkedIn | Image/video | 1.91:1 | Landscape | 3000 chars |
 | Facebook | Image/video | Various | Various | Long OK |
 | Reddit | Image + text | No limit | No limit | Title short |
+| Threads | Image/text | Various | Various | 500 chars |
 
 ---
 
