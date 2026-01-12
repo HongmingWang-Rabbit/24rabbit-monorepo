@@ -1,4 +1,74 @@
 {
+  "landing": {
+    "hero": {
+      "headline": "KI-gestützte Social Media Automatisierung, die rund um die Uhr arbeitet",
+      "subheadline": "Laden Sie Ihre Inhalte einmal hoch. Unsere KI generiert plattformoptimierte Beiträge und veröffentlicht sie automatisch auf allen Ihren Social-Media-Kanälen.",
+      "cta": "Kostenlos testen"
+    },
+    "howItWorks": {
+      "title": "So funktioniert es",
+      "subtitle": "Von Rohinhalten zu veröffentlichten Beiträgen in vier einfachen Schritten",
+      "step1": {
+        "title": "Materialien hochladen",
+        "description": "Fügen Sie Bilder, Videos, PDFs, URLs oder Text hinzu. Unsere KI analysiert und extrahiert wichtige Informationen."
+      },
+      "step2": {
+        "title": "Markenstimme konfigurieren",
+        "description": "Legen Sie Ton, Schlüsselwörter, Hashtag-Regeln und Zielgruppe fest. Die KI lernt Ihren einzigartigen Stil."
+      },
+      "step3": {
+        "title": "Zeitplan festlegen",
+        "description": "Wählen Sie Posting-Frequenz, bevorzugte Zeiten und Plattformen. Den Rest erledigen wir."
+      },
+      "step4": {
+        "title": "Genehmigen & Veröffentlichen",
+        "description": "Überprüfen Sie KI-generierte Varianten, genehmigen Sie die besten und sehen Sie zu, wie sie live gehen."
+      }
+    },
+    "features": {
+      "title": "Leistungsstarke Funktionen",
+      "subtitle": "Alles, was Sie für die Automatisierung Ihrer Social-Media-Präsenz benötigen",
+      "aiGeneration": {
+        "title": "KI-Inhaltsgenerierung",
+        "description": "Verwandeln Sie jedes Material in ansprechende, plattformspezifische Beiträge. Mehrere Varianten mit verschiedenen Ansätzen."
+      },
+      "multiPlatform": {
+        "title": "Multi-Plattform-Publishing",
+        "description": "Veröffentlichen Sie auf Facebook, Twitter, LinkedIn und Instagram von einem Dashboard aus. Optimiert für jede Plattform."
+      },
+      "scheduling": {
+        "title": "Intelligente Planung",
+        "description": "Automatisches Posten zu optimalen Zeiten. Legen Sie Frequenz und bevorzugte Stunden fest und lassen Sie das System rund um die Uhr laufen."
+      },
+      "brandVoice": {
+        "title": "Konsistente Markenstimme",
+        "description": "Definieren Sie Ton, Schlüsselwörter und Richtlinien. Jeder Beitrag behält automatisch Ihre Markenidentität bei."
+      },
+      "analytics": {
+        "title": "Performance-Analytik",
+        "description": "Verfolgen Sie Engagement, Reichweite und Wachstum über alle Plattformen hinweg. Identifizieren Sie Top-Inhalte."
+      },
+      "deduplication": {
+        "title": "Inhalts-Deduplizierung",
+        "description": "KI stellt sicher, dass Sie nie ähnliche Inhalte zweimal posten. Vektor-Embeddings erkennen Duplikate automatisch."
+      }
+    },
+    "platforms": {
+      "title": "Alle Plattformen, ein Dashboard",
+      "subtitle": "Verbinden Sie Ihre Social-Media-Konten und verwalten Sie alles von einem Ort aus",
+      "comingSoon": "YouTube, TikTok und mehr kommen bald"
+    },
+    "cta": {
+      "title": "Bereit, Ihre Social Media zu automatisieren?",
+      "subtitle": "Schließen Sie sich Tausenden von Unternehmen an, die mit KI-gestützter Inhaltsautomatisierung Zeit sparen.",
+      "button": "Kostenlos starten"
+    },
+    "footer": {
+      "copyright": "© {year} 24Rabbit. Alle Rechte vorbehalten.",
+      "privacy": "Datenschutz",
+      "terms": "Nutzungsbedingungen"
+    }
+  },
   "common": {
     "appName": "24Rabbit",
     "tagline": "KI-gestützte Social Media Automatisierung",

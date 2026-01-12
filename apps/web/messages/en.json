@@ -1,4 +1,74 @@
 {
+  "landing": {
+    "hero": {
+      "headline": "AI-Powered Social Media Automation That Works 24/7",
+      "subheadline": "Upload your content once. Our AI generates platform-optimized posts and publishes them automatically across all your social channels.",
+      "cta": "Start Free Trial"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "From raw content to published posts in four simple steps",
+      "step1": {
+        "title": "Upload Materials",
+        "description": "Add images, videos, PDFs, URLs, or text. Our AI analyzes and extracts key information."
+      },
+      "step2": {
+        "title": "Configure Brand Voice",
+        "description": "Set your tone, keywords, hashtag rules, and audience. AI learns your unique style."
+      },
+      "step3": {
+        "title": "Set Your Schedule",
+        "description": "Choose posting frequency, preferred times, and platforms. We handle the rest."
+      },
+      "step4": {
+        "title": "Approve & Publish",
+        "description": "Review AI-generated variations, approve the best ones, and watch them go live."
+      }
+    },
+    "features": {
+      "title": "Powerful Features",
+      "subtitle": "Everything you need to automate your social media presence",
+      "aiGeneration": {
+        "title": "AI Content Generation",
+        "description": "Transform any material into engaging, platform-specific posts. Multiple variations with different angles."
+      },
+      "multiPlatform": {
+        "title": "Multi-Platform Publishing",
+        "description": "Publish to Facebook, Twitter, LinkedIn, and Instagram from one dashboard. Optimized for each platform."
+      },
+      "scheduling": {
+        "title": "Smart Scheduling",
+        "description": "Automated posting at optimal times. Set frequency, preferred hours, and let the system run 24/7."
+      },
+      "brandVoice": {
+        "title": "Consistent Brand Voice",
+        "description": "Define tone, keywords, and guidelines. Every post maintains your brand identity automatically."
+      },
+      "analytics": {
+        "title": "Performance Analytics",
+        "description": "Track engagement, reach, and growth across all platforms. Identify top-performing content."
+      },
+      "deduplication": {
+        "title": "Content Deduplication",
+        "description": "AI ensures you never post similar content twice. Vector embeddings detect duplicates automatically."
+      }
+    },
+    "platforms": {
+      "title": "All Your Platforms, One Dashboard",
+      "subtitle": "Connect your social accounts and manage everything from a single place",
+      "comingSoon": "YouTube, TikTok, and more coming soon"
+    },
+    "cta": {
+      "title": "Ready to Automate Your Social Media?",
+      "subtitle": "Join thousands of businesses saving time with AI-powered content automation.",
+      "button": "Get Started Free"
+    },
+    "footer": {
+      "copyright": "© {year} 24Rabbit. All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    }
+  },
   "common": {
     "appName": "24Rabbit",
     "tagline": "AI-Powered Social Media Automation",

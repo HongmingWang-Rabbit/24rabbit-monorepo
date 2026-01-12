@@ -1,4 +1,74 @@
 {
+  "landing": {
+    "hero": {
+      "headline": "全天候运行的AI社交媒体自动化",
+      "subheadline": "只需上传一次内容。我们的AI会生成平台优化的帖子，并自动发布到所有社交渠道。",
+      "cta": "免费试用"
+    },
+    "howItWorks": {
+      "title": "工作流程",
+      "subtitle": "四个简单步骤，从原始内容到发布帖子",
+      "step1": {
+        "title": "上传素材",
+        "description": "添加图片、视频、PDF、链接或文本。我们的AI会分析并提取关键信息。"
+      },
+      "step2": {
+        "title": "配置品牌声音",
+        "description": "设置语调、关键词、标签规则和受众。AI会学习您独特的风格。"
+      },
+      "step3": {
+        "title": "设置发布计划",
+        "description": "选择发布频率、首选时间和平台。其余的交给我们。"
+      },
+      "step4": {
+        "title": "审核并发布",
+        "description": "审核AI生成的多个版本，批准最佳版本，看着它们上线。"
+      }
+    },
+    "features": {
+      "title": "强大功能",
+      "subtitle": "自动化社交媒体所需的一切",
+      "aiGeneration": {
+        "title": "AI内容生成",
+        "description": "将任何素材转化为引人入胜的平台专属帖子。多个版本，不同角度。"
+      },
+      "multiPlatform": {
+        "title": "多平台发布",
+        "description": "从一个仪表板发布到Facebook、Twitter、LinkedIn和Instagram。针对每个平台优化。"
+      },
+      "scheduling": {
+        "title": "智能排程",
+        "description": "在最佳时间自动发布。设置频率和首选时段，让系统全天候运行。"
+      },
+      "brandVoice": {
+        "title": "一致的品牌声音",
+        "description": "定义语调、关键词和指南。每篇帖子都自动保持品牌一致性。"
+      },
+      "analytics": {
+        "title": "效果分析",
+        "description": "跟踪所有平台的互动、触达和增长。识别表现最佳的内容。"
+      },
+      "deduplication": {
+        "title": "内容去重",
+        "description": "AI确保您永远不会发布相似的内容。向量嵌入自动检测重复。"
+      }
+    },
+    "platforms": {
+      "title": "所有平台，一个仪表板",
+      "subtitle": "连接您的社交账户，从一个地方管理所有内容",
+      "comingSoon": "YouTube、TikTok等即将推出"
+    },
+    "cta": {
+      "title": "准备好自动化您的社交媒体了吗？",
+      "subtitle": "加入数千家使用AI内容自动化节省时间的企业。",
+      "button": "免费开始"
+    },
+    "footer": {
+      "copyright": "© {year} 24Rabbit. 保留所有权利。",
+      "privacy": "隐私政策",
+      "terms": "服务条款"
+    }
+  },
   "common": {
     "appName": "24Rabbit",
     "tagline": "AI驱动的社交媒体自动化",

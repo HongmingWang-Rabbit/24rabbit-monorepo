@@ -1,4 +1,74 @@
 {
+  "landing": {
+    "hero": {
+      "headline": "Automatización de redes sociales con IA que funciona 24/7",
+      "subheadline": "Sube tu contenido una vez. Nuestra IA genera publicaciones optimizadas para cada plataforma y las publica automáticamente en todos tus canales sociales.",
+      "cta": "Prueba gratis"
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "subtitle": "De contenido sin procesar a publicaciones en cuatro simples pasos",
+      "step1": {
+        "title": "Sube materiales",
+        "description": "Añade imágenes, videos, PDFs, URLs o texto. Nuestra IA analiza y extrae información clave."
+      },
+      "step2": {
+        "title": "Configura la voz de marca",
+        "description": "Define tono, palabras clave, reglas de hashtags y audiencia. La IA aprende tu estilo único."
+      },
+      "step3": {
+        "title": "Establece tu programación",
+        "description": "Elige frecuencia de publicación, horarios preferidos y plataformas. Nosotros nos encargamos del resto."
+      },
+      "step4": {
+        "title": "Aprueba y publica",
+        "description": "Revisa las variaciones generadas por IA, aprueba las mejores y míralas publicarse."
+      }
+    },
+    "features": {
+      "title": "Funciones potentes",
+      "subtitle": "Todo lo que necesitas para automatizar tu presencia en redes sociales",
+      "aiGeneration": {
+        "title": "Generación de contenido con IA",
+        "description": "Transforma cualquier material en publicaciones atractivas y específicas para cada plataforma. Múltiples variaciones con diferentes enfoques."
+      },
+      "multiPlatform": {
+        "title": "Publicación multiplataforma",
+        "description": "Publica en Facebook, Twitter, LinkedIn e Instagram desde un solo panel. Optimizado para cada plataforma."
+      },
+      "scheduling": {
+        "title": "Programación inteligente",
+        "description": "Publicación automática en horarios óptimos. Configura frecuencia y horarios preferidos, y deja que el sistema funcione 24/7."
+      },
+      "brandVoice": {
+        "title": "Voz de marca consistente",
+        "description": "Define tono, palabras clave y directrices. Cada publicación mantiene automáticamente tu identidad de marca."
+      },
+      "analytics": {
+        "title": "Analíticas de rendimiento",
+        "description": "Rastrea engagement, alcance y crecimiento en todas las plataformas. Identifica el contenido de mejor rendimiento."
+      },
+      "deduplication": {
+        "title": "Deduplicación de contenido",
+        "description": "La IA asegura que nunca publiques contenido similar dos veces. Los embeddings vectoriales detectan duplicados automáticamente."
+      }
+    },
+    "platforms": {
+      "title": "Todas tus plataformas, un solo panel",
+      "subtitle": "Conecta tus cuentas sociales y gestiona todo desde un solo lugar",
+      "comingSoon": "YouTube, TikTok y más próximamente"
+    },
+    "cta": {
+      "title": "¿Listo para automatizar tus redes sociales?",
+      "subtitle": "Únete a miles de empresas que ahorran tiempo con automatización de contenido con IA.",
+      "button": "Empieza gratis"
+    },
+    "footer": {
+      "copyright": "© {year} 24Rabbit. Todos los derechos reservados.",
+      "privacy": "Política de privacidad",
+      "terms": "Términos de servicio"
+    }
+  },
   "common": {
     "appName": "24Rabbit",
     "tagline": "Automatización de redes sociales con IA",
