@@ -15,14 +15,15 @@ pnpm build                  # Build all packages and apps
 pnpm lint                   # Lint all packages
 pnpm test                   # Run all tests
 
-# Database (Prisma)
-pnpm db:generate            # Generate Prisma client after schema changes
-pnpm db:push                # Push schema changes to database
+# Database (Drizzle ORM)
+pnpm db:generate            # Generate migration SQL from schema changes
+pnpm db:push                # Push schema directly to database (dev)
+pnpm db:migrate             # Run migrations (production)
 pnpm db:seed                # Seed the database
-pnpm db:studio              # Open Prisma Studio GUI
+pnpm db:studio              # Open Drizzle Studio GUI
 
 # Local services
-docker compose up -d        # Start PostgreSQL, Redis, and MinIO (S3-compatible storage)
+docker compose up -d        # Start PostgreSQL (5433), Redis (6379), MinIO (9000/9001)
 
 # Run commands in specific package
 pnpm --filter @24rabbit/web dev
@@ -38,7 +39,7 @@ pnpm --filter @24rabbit/worker build
 - `apps/worker` (`@24rabbit/worker`) - Background job processor using BullMQ
 
 **Packages:**
-- `packages/database` (`@24rabbit/database`) - Prisma schema, client, and migrations. PostgreSQL with pgvector for content deduplication.
+- `packages/database` (`@24rabbit/database`) - Drizzle ORM schema and migrations. PostgreSQL with pgvector for content deduplication.
 - `packages/ai` (`@24rabbit/ai`) - AI adapter interface with Gemini implementation. Supports image/video analysis and content generation.
 - `packages/platforms` (`@24rabbit/platforms`) - Social platform connectors (Facebook first, then Twitter, LinkedIn, etc.)
 - `packages/queue` (`@24rabbit/queue`) - BullMQ queue definitions and worker factories for publish, schedule, and analytics jobs
@@ -61,17 +62,20 @@ pnpm --filter @24rabbit/worker build
 
 ### Database
 
-PostgreSQL with pgvector extension. Schema in `packages/database/prisma/schema.prisma`. Key models:
-- User/Subscription - Auth and billing
-- SocialAccount/BrandProfile - Connected platforms and brand settings
-- Material - User-uploaded content with usage tracking
-- Post/PendingPost - Published and pending approval content
-- ContentEmbedding - Vector embeddings for deduplication
+PostgreSQL with pgvector extension. Schema in `packages/database/src/schema/`. Key tables:
+- `users` - Auth (Better Auth)
+- `organizations` / `subscriptions` - Billing unit and credits
+- `social_accounts` / `brand_profiles` - Connected platforms and brand settings (N:M relationship)
+- `materials` - User-uploaded content with usage tracking
+- `posts` / `pending_posts` - Published and pending approval content
+- `content_embeddings` - 768-dim vector embeddings for deduplication
+
+See `docs/database/` for detailed schema documentation.
 
 ### Environment
 
-Copy `.env.example` to `.env`. Required variables:
-- `DATABASE_URL` - PostgreSQL connection
+Copy `.env.example` to `.env.local`. Required variables:
+- `DATABASE_URL` - PostgreSQL connection (port 5433 for Docker)
 - `REDIS_URL` - Redis for BullMQ
 - `GEMINI_API_KEY` - AI content generation
 - `ENCRYPTION_KEY` - 32 bytes hex for token encryption

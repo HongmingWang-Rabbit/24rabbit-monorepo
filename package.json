@@ -9,6 +9,7 @@
     "test": "turbo run test",
     "db:generate": "turbo run db:generate --filter=@24rabbit/database",
     "db:push": "turbo run db:push --filter=@24rabbit/database",
+    "db:migrate": "turbo run db:migrate --filter=@24rabbit/database",
     "db:seed": "turbo run db:seed --filter=@24rabbit/database",
     "db:studio": "turbo run db:studio --filter=@24rabbit/database",
     "clean": "turbo run clean && rimraf node_modules .turbo"

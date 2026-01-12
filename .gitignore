@@ -35,9 +35,8 @@ pnpm-debug.log*
 coverage
 .nyc_output
 
-# Prisma
-prisma/*.db
-prisma/*.db-journal
+# Drizzle
+# Note: migrations/ directory IS tracked (needed for production deploys)
 
 # Misc
 *.tsbuildinfo
