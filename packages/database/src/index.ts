@@ -1,5 +1,5 @@
 // Database connection
-export { db, queryClient } from './db';
+export { db, queryClient, createDatabase } from './db';
 export type { Database } from './db';
 
 // Schema tables and types
