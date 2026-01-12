@@ -6,11 +6,15 @@ import { materialType, materialStatus, contentAngle } from './enums';
 import type { ExternalSourceConfig } from '../types';
 
 export const materials = pgTable('materials', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id),
-  brandProfileId: text('brand_profile_id')
-    .references(() => brandProfiles.id, { onDelete: 'set null' }),
+  brandProfileId: text('brand_profile_id').references(() => brandProfiles.id, {
+    onDelete: 'set null',
+  }),
 
   // Source
   type: materialType('type').notNull(),
@@ -44,10 +48,14 @@ export const materials = pgTable('materials', {
 });
 
 export const externalSources = pgTable('external_sources', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id),
-  brandProfileId: text('brand_profile_id').notNull()
+  brandProfileId: text('brand_profile_id')
+    .notNull()
     .references(() => brandProfiles.id, { onDelete: 'cascade' }),
 
   type: text('type').notNull(),

@@ -12,4 +12,19 @@ export * from './relations';
 export * from './types';
 
 // Re-export drizzle utilities for convenience
-export { eq, ne, gt, gte, lt, lte, and, or, not, isNull, isNotNull, sql, asc, desc } from 'drizzle-orm';
+export {
+  eq,
+  ne,
+  gt,
+  gte,
+  lt,
+  lte,
+  and,
+  or,
+  not,
+  isNull,
+  isNotNull,
+  sql,
+  asc,
+  desc,
+} from 'drizzle-orm';

@@ -6,15 +6,19 @@ import { materials } from './material';
 import { socialPlatform, contentAngle, pendingPostStatus } from './enums';
 
 export const pendingPosts = pgTable('pending_posts', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id),
-  brandProfileId: text('brand_profile_id').notNull()
+  brandProfileId: text('brand_profile_id')
+    .notNull()
     .references(() => brandProfiles.id),
-  materialId: text('material_id').notNull()
+  materialId: text('material_id')
+    .notNull()
     .references(() => materials.id),
-  scheduleId: text('schedule_id')
-    .references(() => schedules.id),
+  scheduleId: text('schedule_id').references(() => schedules.id),
 
   // Target platforms
   platforms: socialPlatform('platforms').array().notNull(),
@@ -44,19 +48,21 @@ export const pendingPosts = pgTable('pending_posts', {
 });
 
 export const posts = pgTable('posts', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id),
-  brandProfileId: text('brand_profile_id').notNull()
+  brandProfileId: text('brand_profile_id')
+    .notNull()
     .references(() => brandProfiles.id),
-  socialAccountId: text('social_account_id').notNull()
+  socialAccountId: text('social_account_id')
+    .notNull()
     .references(() => socialAccounts.id),
-  materialId: text('material_id')
-    .references(() => materials.id),
-  scheduleId: text('schedule_id')
-    .references(() => schedules.id),
-  pendingPostId: text('pending_post_id')
-    .references(() => pendingPosts.id),
+  materialId: text('material_id').references(() => materials.id),
+  scheduleId: text('schedule_id').references(() => schedules.id),
+  pendingPostId: text('pending_post_id').references(() => pendingPosts.id),
 
   // Content
   content: text('content').notNull(),

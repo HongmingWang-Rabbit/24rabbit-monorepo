@@ -315,5 +315,16 @@
     "linkedin": "LinkedIn",
     "instagram": "Instagram",
     "youtube": "YouTube"
+  },
+  "organization": {
+    "title": "选择组织",
+    "subtitle": "选择一个组织继续或创建新组织",
+    "orgName": "组织名称",
+    "orgNamePlaceholder": "我的公司",
+    "createNew": "创建新组织",
+    "createOrganization": "创建组织",
+    "createError": "创建组织失败，请重试。",
+    "selectError": "选择组织失败，请重试。",
+    "noOrganizations": "您还没有任何组织，请创建一个以开始使用。"
   }
 }

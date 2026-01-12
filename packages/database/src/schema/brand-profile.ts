@@ -3,12 +3,19 @@ import { createId } from '@paralleldrive/cuid2';
 import { organizations } from './organization';
 import { socialPlatform, visualStyle, fontPreference } from './enums';
 import type {
-  BrandColors, LanguageRules, ExamplePost, ContentPillar, PlatformSettings
+  BrandColors,
+  LanguageRules,
+  ExamplePost,
+  ContentPillar,
+  PlatformSettings,
 } from '../types';
 
 export const brandProfiles = pgTable('brand_profiles', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  organizationId: text('organization_id')
+    .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
 
   // Identity (Visual)
@@ -49,48 +56,66 @@ export const brandProfiles = pgTable('brand_profiles', {
 
 // SocialAccount belongs to Organization (not BrandProfile)
 // Linked to brands via N:M join table
-export const socialAccounts = pgTable('social_accounts', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  organizationId: text('organization_id').notNull()
-    .references(() => organizations.id),
+export const socialAccounts = pgTable(
+  'social_accounts',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id),
 
-  platform: socialPlatform('platform').notNull(),
-  accountId: text('account_id').notNull(),
-  accountName: text('account_name').notNull(),
-  accountType: text('account_type'),
-  profileUrl: text('profile_url'),
-  avatarUrl: text('avatar_url'),
+    platform: socialPlatform('platform').notNull(),
+    accountId: text('account_id').notNull(),
+    accountName: text('account_name').notNull(),
+    accountType: text('account_type'),
+    profileUrl: text('profile_url'),
+    avatarUrl: text('avatar_url'),
 
-  // OAuth tokens (encrypted)
-  accessToken: text('access_token').notNull(),
-  refreshToken: text('refresh_token'),
-  tokenExpiresAt: timestamp('token_expires_at'),
+    // OAuth tokens (encrypted)
+    accessToken: text('access_token').notNull(),
+    refreshToken: text('refresh_token'),
+    tokenExpiresAt: timestamp('token_expires_at'),
 
-  isActive: boolean('is_active').default(true),
-  deletedAt: timestamp('deleted_at'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
-}, (table) => ({
-  uniqueAccount: unique().on(table.platform, table.accountId),
-}));
+    isActive: boolean('is_active').default(true),
+    deletedAt: timestamp('deleted_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    uniqueAccount: unique().on(table.platform, table.accountId),
+  })
+);
 
 // Join table: BrandProfile ↔ SocialAccount (N:M)
 // Allows one account to be used by multiple brands
-export const brandProfileAccounts = pgTable('brand_profile_accounts', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  brandProfileId: text('brand_profile_id').notNull()
-    .references(() => brandProfiles.id, { onDelete: 'cascade' }),
-  socialAccountId: text('social_account_id').notNull()
-    .references(() => socialAccounts.id, { onDelete: 'cascade' }),
-  isDefault: boolean('is_default').default(false),
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  uniquePair: unique().on(table.brandProfileId, table.socialAccountId),
-}));
+export const brandProfileAccounts = pgTable(
+  'brand_profile_accounts',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    brandProfileId: text('brand_profile_id')
+      .notNull()
+      .references(() => brandProfiles.id, { onDelete: 'cascade' }),
+    socialAccountId: text('social_account_id')
+      .notNull()
+      .references(() => socialAccounts.id, { onDelete: 'cascade' }),
+    isDefault: boolean('is_default').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    uniquePair: unique().on(table.brandProfileId, table.socialAccountId),
+  })
+);
 
 export const schedules = pgTable('schedules', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  brandProfileId: text('brand_profile_id').notNull()
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  brandProfileId: text('brand_profile_id')
+    .notNull()
     .references(() => brandProfiles.id, { onDelete: 'cascade' }),
 
   name: text('name'),

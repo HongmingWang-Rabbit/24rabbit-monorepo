@@ -189,9 +189,12 @@ describe('withRetry', () => {
     const fn = vi.fn().mockRejectedValue(new Error('always fails'));
 
     const resultPromise = withRetry(fn, { maxRetries: 2, initialDelayMs: 100 });
-    await vi.runAllTimersAsync();
 
-    await expect(resultPromise).rejects.toThrow('always fails');
+    // Set up the rejection expectation before advancing timers
+    const expectation = expect(resultPromise).rejects.toThrow('always fails');
+    await vi.runAllTimersAsync();
+    await expectation;
+
     expect(fn).toHaveBeenCalledTimes(3); // 1 initial + 2 retries
   });
 
@@ -199,9 +202,12 @@ describe('withRetry', () => {
     const fn = vi.fn().mockRejectedValue(new AIError('Not retryable', 'INVALID_INPUT', false));
 
     const resultPromise = withRetry(fn, { maxRetries: 3 });
-    await vi.runAllTimersAsync();
 
-    await expect(resultPromise).rejects.toThrow('Not retryable');
+    // Set up the rejection expectation before advancing timers
+    const expectation = expect(resultPromise).rejects.toThrow('Not retryable');
+    await vi.runAllTimersAsync();
+    await expectation;
+
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
@@ -235,8 +241,10 @@ describe('withRetry', () => {
       backoffMultiplier: 2,
     });
 
+    // Set up the rejection expectation before advancing timers
+    const expectation = expect(resultPromise).rejects.toThrow();
     await vi.runAllTimersAsync();
-    await expect(resultPromise).rejects.toThrow();
+    await expectation;
 
     vi.unstubAllGlobals();
 
@@ -261,8 +269,10 @@ describe('withRetry', () => {
       backoffMultiplier: 2,
     });
 
+    // Set up the rejection expectation before advancing timers
+    const expectation = expect(resultPromise).rejects.toThrow();
     await vi.runAllTimersAsync();
-    await expect(resultPromise).rejects.toThrow();
+    await expectation;
 
     vi.unstubAllGlobals();
 

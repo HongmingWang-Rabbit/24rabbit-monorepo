@@ -14,7 +14,11 @@ describe('Database Enums', () => {
 
   it('should have correct subscription tiers', () => {
     expect(subscriptionTier.enumValues).toEqual([
-      'FREE', 'STARTER', 'GROWTH', 'BUSINESS', 'ENTERPRISE'
+      'FREE',
+      'STARTER',
+      'GROWTH',
+      'BUSINESS',
+      'ENTERPRISE',
     ]);
   });
 
@@ -27,8 +31,12 @@ describe('Database Enums', () => {
 
   it('should have correct content angles', () => {
     expect(contentAngle.enumValues).toEqual([
-      'PRODUCT_FOCUS', 'USER_BENEFIT', 'STORYTELLING',
-      'EDUCATIONAL', 'SOCIAL_PROOF', 'PROMOTIONAL'
+      'PRODUCT_FOCUS',
+      'USER_BENEFIT',
+      'STORYTELLING',
+      'EDUCATIONAL',
+      'SOCIAL_PROOF',
+      'PROMOTIONAL',
     ]);
   });
 

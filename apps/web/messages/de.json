@@ -315,5 +315,16 @@
     "linkedin": "LinkedIn",
     "instagram": "Instagram",
     "youtube": "YouTube"
+  },
+  "organization": {
+    "title": "Organisation auswählen",
+    "subtitle": "Wählen Sie eine Organisation aus, um fortzufahren, oder erstellen Sie eine neue",
+    "orgName": "Organisationsname",
+    "orgNamePlaceholder": "Mein Unternehmen",
+    "createNew": "Neue Organisation erstellen",
+    "createOrganization": "Organisation erstellen",
+    "createError": "Organisation konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "selectError": "Organisation konnte nicht ausgewählt werden. Bitte versuchen Sie es erneut.",
+    "noOrganizations": "Sie haben noch keine Organisationen. Erstellen Sie eine, um zu beginnen."
   }
 }

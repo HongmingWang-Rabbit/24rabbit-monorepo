@@ -6,11 +6,11 @@ import type { SocialPlatform } from './schema/enums';
 
 // Brand color palette
 export interface BrandColors {
-  primary?: string;      // e.g., "#6366F1"
-  secondary?: string;    // e.g., "#EC4899"
-  accent?: string;       // e.g., "#10B981"
-  background?: string;   // e.g., "#FFFFFF"
-  text?: string;         // e.g., "#1F2937"
+  primary?: string; // e.g., "#6366F1"
+  secondary?: string; // e.g., "#EC4899"
+  accent?: string; // e.g., "#10B981"
+  background?: string; // e.g., "#FFFFFF"
+  text?: string; // e.g., "#1F2937"
 }
 
 // Language and content rules
@@ -30,8 +30,8 @@ export interface ExamplePost {
 
 // Content pillar with percentage allocation
 export interface ContentPillar {
-  name: string;        // e.g., "Product Updates"
-  percentage: number;  // e.g., 40
+  name: string; // e.g., "Product Updates"
+  percentage: number; // e.g., 40
 }
 
 // Per-platform settings override

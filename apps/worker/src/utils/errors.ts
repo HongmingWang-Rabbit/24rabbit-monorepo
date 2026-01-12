@@ -54,7 +54,10 @@ export class RateLimitError extends WorkerError {
  * Error thrown when authentication fails
  */
 export class AuthError extends WorkerError {
-  constructor(message: string, public readonly requiresReauth: boolean = false) {
+  constructor(
+    message: string,
+    public readonly requiresReauth: boolean = false
+  ) {
     super(message, !requiresReauth, 'auth');
     this.name = 'AuthError';
   }
@@ -64,7 +67,10 @@ export class AuthError extends WorkerError {
  * Error thrown when content violates platform policies
  */
 export class ContentPolicyError extends WorkerError {
-  constructor(message: string, public readonly platform: string) {
+  constructor(
+    message: string,
+    public readonly platform: string
+  ) {
     super(message, false, 'content_policy');
     this.name = 'ContentPolicyError';
   }
