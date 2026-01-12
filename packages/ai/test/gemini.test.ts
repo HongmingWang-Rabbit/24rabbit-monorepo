@@ -190,6 +190,14 @@ describe('GeminiAdapter', () => {
 
       await expect(adapter.analyzeVideo('')).rejects.toThrow('Invalid video URL');
     });
+
+    it('should throw on unsupported mimeType', async () => {
+      const adapter = new GeminiAdapter({ apiKey: 'test' });
+
+      await expect(
+        adapter.analyzeVideo('https://example.com/video.mkv', 'video/x-matroska')
+      ).rejects.toThrow('Unsupported video type: video/x-matroska');
+    });
   });
 
   describe('generateCopy', () => {

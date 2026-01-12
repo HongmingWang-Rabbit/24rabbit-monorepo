@@ -28,6 +28,9 @@ export const GEMINI_MODELS = {
 /** Default hashtag count per platform (conservative defaults) */
 const DEFAULT_HASHTAG_COUNT = 5;
 
+/** Supported video MIME types for Gemini API */
+const SUPPORTED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/mov', 'video/avi'] as const;
+
 export interface GeminiModelConfig {
   default?: string;
   video?: string;
@@ -86,6 +89,7 @@ Only return the JSON, no other text.`;
 
   async analyzeVideo(videoUrl: string, mimeType = 'video/mp4'): Promise<VideoAnalysisResult> {
     this.validateUrl(videoUrl, 'video');
+    this.validateVideoMimeType(mimeType);
 
     return this.executeWithRetry(async () => {
       const model = this.client.getGenerativeModel({ model: this.models.video });
@@ -242,6 +246,17 @@ Only return the JSON, no other text.`;
     }
     if (!options.platform) {
       throw new AIError('Platform is required', 'INVALID_INPUT', false);
+    }
+  }
+
+  /** Validate video MIME type */
+  private validateVideoMimeType(mimeType: string): void {
+    if (!SUPPORTED_VIDEO_TYPES.includes(mimeType as (typeof SUPPORTED_VIDEO_TYPES)[number])) {
+      throw new AIError(
+        `Unsupported video type: ${mimeType}. Supported: ${SUPPORTED_VIDEO_TYPES.join(', ')}`,
+        'INVALID_INPUT',
+        false
+      );
     }
   }
 }

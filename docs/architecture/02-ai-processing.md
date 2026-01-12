@@ -172,7 +172,7 @@ Worker picks up job from Redis queue: `content:generate`
 ┌─────────────────────────────────────┐
 │ API Call to Gemini                  │
 ├─────────────────────────────────────┤
-│ Model: gemini-1.5-pro               │
+│ Model: gemini-2.0-flash (default)   │
 │ Temperature: 0.8 (creative)         │
 │ Response format: JSON               │
 │                                     │
