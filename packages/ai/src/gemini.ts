@@ -20,8 +20,8 @@ import {
 
 /** Default Gemini model configuration */
 export const GEMINI_MODELS = {
-  default: 'gemini-1.5-flash',
-  video: 'gemini-1.5-pro',
+  default: 'gemini-2.0-flash',
+  video: 'gemini-2.0-flash',
   embedding: 'text-embedding-004',
 } as const;
 

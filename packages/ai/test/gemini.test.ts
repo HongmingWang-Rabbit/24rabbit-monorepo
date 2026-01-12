@@ -398,8 +398,8 @@ describe('createAIAdapter', () => {
 
 describe('GEMINI_MODELS', () => {
   it('should export default model constants', () => {
-    expect(GEMINI_MODELS.default).toBe('gemini-1.5-flash');
-    expect(GEMINI_MODELS.video).toBe('gemini-1.5-pro');
+    expect(GEMINI_MODELS.default).toBe('gemini-2.0-flash');
+    expect(GEMINI_MODELS.video).toBe('gemini-2.0-flash');
     expect(GEMINI_MODELS.embedding).toBe('text-embedding-004');
   });
 });
