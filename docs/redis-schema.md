@@ -228,31 +228,281 @@ process.on('SIGTERM', async () => {
 | `bullmq` | ^5.0.0 | Job queue library |
 | `ioredis` | ^5.4.0 | Redis client |
 
-## Future Considerations
+## Planned Queues (Not Yet Implemented)
 
-### Rate Limiting (Not Yet Implemented)
+These queues are referenced in architecture docs but not yet defined in `packages/queue/src/queues.ts`:
 
-Platform-specific rate limits could use Redis counters:
+### 4. Content Analyze Queue
+
+Processes uploaded materials for AI analysis.
+
+| Property | Value |
+|----------|-------|
+| Queue Name | `content:analyze` |
+| Purpose | Analyze uploaded images/videos, extract metadata |
+
+**Job Data Schema:**
+```typescript
+interface ContentAnalyzeJobData {
+  materialId: string;         // Reference to Material record
+  userId: string;             // Owner of the material
+  fileUrl: string;            // S3/MinIO URL to process
+  fileType: 'IMAGE' | 'VIDEO';
+}
+```
+
+### 5. Embedding Generate Queue
+
+Creates vector embeddings for content deduplication.
+
+| Property | Value |
+|----------|-------|
+| Queue Name | `embedding:generate` |
+| Purpose | Generate pgvector embeddings for similarity search |
+
+**Job Data Schema:**
+```typescript
+interface EmbeddingGenerateJobData {
+  contentId: string;          // Reference to analyzed content
+  text?: string;              // Text content to embed
+  imageUrl?: string;          // Image to embed (if using CLIP)
+}
+```
+
+### 6. Token Refresh Queue
+
+Handles OAuth token refresh for social accounts.
+
+| Property | Value |
+|----------|-------|
+| Queue Name | `token:refresh` |
+| Purpose | Proactively refresh expiring OAuth tokens |
+
+**Job Data Schema:**
+```typescript
+interface TokenRefreshJobData {
+  socialAccountId: string;    // Reference to SocialAccount record
+  platform: string;           // Platform enum
+  expiresAt: string;          // ISO timestamp of token expiry
+}
+```
+
+---
+
+## Rate Limiting
+
+Platform-specific rate limits using Redis counters.
+
+### Key Schema
 
 ```
-ratelimit:{platform}:{date}    # Daily counter per platform
+ratelimit:{userId}:{platform}:{date}
 ```
 
-Limits per platform:
-- Twitter: 50 posts/day
-- LinkedIn: 100 posts/day
-- Facebook: 50 posts/day
+| Component | Example | Description |
+|-----------|---------|-------------|
+| `userId` | `clx123abc` | User or brand profile ID |
+| `platform` | `twitter` | Lowercase platform name |
+| `date` | `2024-01-15` | ISO date (YYYY-MM-DD) |
 
-### Caching (Not Yet Implemented)
+**Example keys:**
+```
+ratelimit:clx123abc:twitter:2024-01-15
+ratelimit:clx123abc:linkedin:2024-01-15
+ratelimit:clx123abc:facebook:2024-01-15
+```
 
-Potential caching use cases:
-- AI-generated content templates
-- Platform API responses
-- User session data
+### Platform Limits
 
-### Pub/Sub (Not Yet Implemented)
+| Platform | Daily Limit | Key TTL |
+|----------|-------------|---------|
+| Twitter/X | 50 posts | 86400s (24h) |
+| LinkedIn | 100 posts | 86400s (24h) |
+| Facebook | 50 posts | 86400s (24h) |
+| Instagram | 25 posts | 86400s (24h) |
 
-Real-time notifications could use Redis pub/sub:
-- Job completion notifications
-- Error alerts
-- Analytics updates
+### Implementation Pattern
+
+```typescript
+const key = `ratelimit:${userId}:${platform}:${date}`;
+const current = await redis.incr(key);
+
+if (current === 1) {
+  // First post of the day - set expiry
+  await redis.expire(key, 86400);
+}
+
+if (current > PLATFORM_LIMITS[platform]) {
+  throw new RateLimitExceededError(platform);
+}
+```
+
+---
+
+## Caching
+
+### Key Schema
+
+```
+cache:{domain}:{identifier}
+```
+
+### Cache Keys
+
+| Key Pattern | Purpose | TTL |
+|-------------|---------|-----|
+| `cache:brand:{brandProfileId}` | Brand profile config | 3600s (1h) |
+| `cache:account:{socialAccountId}:valid` | Token validity flag | 300s (5m) |
+| `cache:platform:{platform}:status` | Platform API health | 60s (1m) |
+| `cache:user:{userId}:credits` | Credit balance | 60s (1m) |
+
+**Example keys:**
+```
+cache:brand:clx456def
+cache:account:clx789ghi:valid
+cache:platform:twitter:status
+cache:user:clx123abc:credits
+```
+
+### Cache Invalidation
+
+Invalidate on database writes:
+- Brand profile update → delete `cache:brand:{id}`
+- Token refresh → delete `cache:account:{id}:valid`
+- Credit transaction → delete `cache:user:{id}:credits`
+
+---
+
+## Pub/Sub Channels
+
+Real-time notifications using Redis pub/sub.
+
+### Channel Naming
+
+```
+{domain}:{event}:{scope}
+```
+
+### Channels
+
+| Channel Pattern | Purpose | Payload |
+|-----------------|---------|---------|
+| `jobs:completed:{userId}` | Job completion notification | `{ jobId, queue, status }` |
+| `jobs:failed:{userId}` | Job failure alert | `{ jobId, queue, error }` |
+| `posts:published:{brandProfileId}` | Post published event | `{ postId, platform, url }` |
+| `analytics:updated:{postId}` | Metrics refresh | `{ likes, shares, comments }` |
+| `system:maintenance` | System-wide alerts | `{ message, severity }` |
+
+**Example usage:**
+```typescript
+// Publisher (worker)
+await redis.publish(
+  `posts:published:${brandProfileId}`,
+  JSON.stringify({ postId, platform, url })
+);
+
+// Subscriber (web app via WebSocket)
+redis.subscribe(`jobs:completed:${userId}`);
+redis.on('message', (channel, message) => {
+  ws.send(message);
+});
+```
+
+---
+
+## Queue Monitoring
+
+### Bull Board Setup (Recommended)
+
+```typescript
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+
+const serverAdapter = new ExpressAdapter();
+createBullBoard({
+  queues: [
+    new BullMQAdapter(publishQueue),
+    new BullMQAdapter(scheduleQueue),
+    new BullMQAdapter(analyticsQueue),
+  ],
+  serverAdapter,
+});
+
+app.use('/admin/queues', serverAdapter.getRouter());
+```
+
+### Health Check Keys
+
+```
+health:worker:{workerId}:heartbeat    # Worker heartbeat timestamp
+health:queue:{queueName}:depth        # Queue depth snapshot
+```
+
+### Metrics to Track
+
+| Metric | Redis Command | Description |
+|--------|---------------|-------------|
+| Queue depth | `LLEN bull:{queue}:waiting` | Jobs waiting |
+| Active jobs | `LLEN bull:{queue}:active` | Jobs processing |
+| Failed count | `ZCARD bull:{queue}:failed` | Failed jobs |
+| Completed count | `ZCARD bull:{queue}:completed` | Completed jobs |
+
+---
+
+## Session Storage (If Using Redis Sessions)
+
+### Key Schema
+
+```
+session:{sessionId}
+```
+
+### Session Data
+
+```typescript
+interface SessionData {
+  userId: string;
+  email: string;
+  expiresAt: number;        // Unix timestamp
+  createdAt: number;
+}
+```
+
+### TTL Strategy
+
+| Session Type | TTL |
+|--------------|-----|
+| Default session | 7 days (604800s) |
+| "Remember me" | 30 days (2592000s) |
+| API token | No expiry (until revoked) |
+
+---
+
+## Production Considerations
+
+### Memory Management
+
+```redis
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+```
+
+### Persistence
+
+Enable AOF for job durability:
+```redis
+appendonly yes
+appendfsync everysec
+```
+
+### Key Expiration Summary
+
+| Key Type | TTL | Auto-cleanup |
+|----------|-----|--------------|
+| Completed jobs | 24 hours | BullMQ managed |
+| Failed jobs | 7 days | BullMQ managed |
+| Rate limit counters | 24 hours | Redis EXPIRE |
+| Cache entries | 1-60 minutes | Redis EXPIRE |
+| Sessions | 7-30 days | Redis EXPIRE |
+| Pub/Sub | N/A | No storage |
