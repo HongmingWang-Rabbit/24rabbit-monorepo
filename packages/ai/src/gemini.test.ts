@@ -9,9 +9,9 @@ import { EMBEDDING_DIMENSION } from './types';
 
 // Mock the Google Generative AI module
 vi.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: vi.fn().mockImplementation(() => ({
-    getGenerativeModel: vi.fn(),
-  })),
+  GoogleGenerativeAI: vi.fn().mockImplementation(function () {
+    return { getGenerativeModel: vi.fn() };
+  }),
 }));
 
 // Mock fetchImageAsBase64
@@ -39,9 +39,9 @@ describe('GeminiAdapter', () => {
 
     // Get the mocked GoogleGenerativeAI
     const { GoogleGenerativeAI } = vi.mocked(await import('@google/generative-ai'));
-    GoogleGenerativeAI.mockImplementation(() => ({
-      getGenerativeModel: mockGetGenerativeModel,
-    }));
+    GoogleGenerativeAI.mockImplementation(function () {
+      return { getGenerativeModel: mockGetGenerativeModel };
+    });
 
     // Set env var for tests
     process.env.GEMINI_API_KEY = 'test-api-key';
