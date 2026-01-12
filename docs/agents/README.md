@@ -43,12 +43,23 @@ Agents operate as BullMQ workers processing jobs from Redis queues:
 
 ## Documentation Index
 
+### Core Operations
+
 | Document | Description |
 |----------|-------------|
 | [01-lifecycle.md](./01-lifecycle.md) | Agent lifecycle, states, and initialization |
 | [02-content-generation.md](./02-content-generation.md) | Content generation behavior and decision logic |
 | [03-approval-workflow.md](./03-approval-workflow.md) | Approval workflow rules and routing |
 | [04-error-handling.md](./04-error-handling.md) | Error handling, retries, and recovery |
+
+### Advanced Operations
+
+| Document | Description |
+|----------|-------------|
+| [05-material-analysis.md](./05-material-analysis.md) | Material ingestion, extraction, and AI analysis |
+| [06-multi-platform.md](./06-multi-platform.md) | Multi-platform publishing and rate limiting |
+| [07-scheduling-reliability.md](./07-scheduling-reliability.md) | Cron reliability, timezone handling, missed executions |
+| [08-scaling.md](./08-scaling.md) | Scaling, deployment, and infrastructure |
 
 ## Quick Reference
 
