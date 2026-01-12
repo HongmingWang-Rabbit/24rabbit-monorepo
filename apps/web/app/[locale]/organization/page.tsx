@@ -33,7 +33,7 @@ export default function OrganizationPage() {
       if (!session?.user) return;
 
       try {
-        const result = await orgClient.listOrganizations();
+        const result = await orgClient.list({});
         if (result.data) {
           setOrganizations(result.data);
           // If user has no organizations, show create form
