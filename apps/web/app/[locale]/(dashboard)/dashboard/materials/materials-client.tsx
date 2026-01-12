@@ -169,7 +169,7 @@ function MaterialCard({ type, name, status, brandName, usageCount }: MaterialDat
         <p className="text-sm font-medium truncate">{name}</p>
         <div className="flex items-center justify-between mt-2">
           <span className={`text-xs px-2 py-0.5 rounded-full ${statusConfig.color}`}>
-            {status === 'USED' && usageCount
+            {status === 'used' && usageCount
               ? `${t(`status.${status.toLowerCase()}`)} x${usageCount}`
               : t(`status.${status.toLowerCase()}`)}
           </span>

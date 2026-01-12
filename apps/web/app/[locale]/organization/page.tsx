@@ -145,11 +145,7 @@ export default function OrganizationPage() {
               >
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   {org.logo ? (
-                    <img
-                      src={org.logo}
-                      alt={org.name}
-                      className="h-8 w-8 rounded"
-                    />
+                    <img src={org.logo} alt={org.name} className="h-8 w-8 rounded" />
                   ) : (
                     <Building2 className="h-5 w-5 text-primary" />
                   )}
@@ -172,10 +168,7 @@ export default function OrganizationPage() {
         {showCreateForm ? (
           <form onSubmit={handleCreateOrganization} className="space-y-4">
             <div>
-              <label
-                htmlFor="orgName"
-                className="block text-sm font-medium mb-2"
-              >
+              <label htmlFor="orgName" className="block text-sm font-medium mb-2">
                 {t('orgName')}
               </label>
               <input
