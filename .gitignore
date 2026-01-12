@@ -41,7 +41,8 @@ coverage
 # Misc
 *.tsbuildinfo
 
-# Claude Code temp files
+# Claude Code
+.claude
 tmpclaude-*-cwd
 
 */**/__pycache__

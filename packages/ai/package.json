@@ -5,6 +5,9 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean": "rimraf node_modules .turbo"
   },
   "dependencies": {
@@ -13,7 +16,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^4.0.16",
     "rimraf": "^6.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.16"
   }
 }

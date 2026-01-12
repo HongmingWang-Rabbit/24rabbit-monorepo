@@ -122,18 +122,36 @@ apps/web/
 ├── app/[locale]/           # i18n-aware pages
 │   ├── (auth)/             # Public auth pages
 │   ├── (dashboard)/        # Protected dashboard
+│   ├── api/                # API routes
 │   └── page.tsx            # Landing page
 ├── components/
 │   ├── ui/                 # shadcn/ui components
 │   ├── layout/             # Sidebar, header, nav components
+│   ├── features/           # Feature-specific components
 │   └── providers/          # Theme, session providers
 ├── lib/
-│   ├── constants/          # Shared constants (platforms, status)
+│   ├── constants/          # Shared constants (platforms, status, storage)
 │   ├── hooks/              # Custom React hooks
+│   ├── storage.ts          # S3/MinIO presigned URL utilities
 │   └── auth-client.ts      # Better Auth client
 ├── i18n/                   # next-intl configuration
 └── messages/               # Translation JSON files
 ```
+
+### Materials Upload
+
+The materials upload feature uses presigned URLs for direct-to-storage uploads:
+
+1. Client requests presigned URL from `/api/materials/upload`
+2. Client uploads file directly to MinIO/S3 using the presigned URL
+3. Client confirms upload completion, triggering AI analysis
+
+Supported file types:
+- **Images:** JPEG, PNG, GIF, WebP
+- **Videos:** MP4, WebM, QuickTime
+- **Documents:** PDF, Plain text, Markdown
+
+Maximum file size: 50MB
 
 ## Development
 
