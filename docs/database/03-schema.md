@@ -186,6 +186,11 @@ export const brandProfiles = pgTable('brand_profiles', {
   // Defaults (autonomous agent)
   autoApprove: boolean('auto_approve').default(true),
 
+  // Notification Settings (for approval workflow)
+  notifyEmail: text('notify_email'),            // Email for approval notifications
+  notifyWebhook: text('notify_webhook'),        // Webhook URL for integrations
+  approvalTimeout: integer('approval_timeout').default(24), // Hours before expiry
+
   // Meta
   deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -353,6 +358,8 @@ export const posts = pgTable('posts', {
     .references(() => materials.id),
   scheduleId: text('schedule_id')
     .references(() => schedules.id),
+  pendingPostId: text('pending_post_id')
+    .references(() => pendingPosts.id),  // Links to source pending post
 
   // Content
   content: text('content').notNull(),

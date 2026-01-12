@@ -152,6 +152,9 @@ Brand configuration and voice settings.
 | contentPillars | jsonb | ContentPillar[] array |
 | platformSettings | jsonb | Per-platform overrides |
 | autoApprove | boolean | Skip manual review (default: true) |
+| notifyEmail | text | Email for approval notifications |
+| notifyWebhook | text | Webhook URL for integrations |
+| approvalTimeout | integer | Hours before pending post expires (default: 24) |
 | deletedAt | timestamp | Soft delete marker |
 | createdAt | timestamp | Creation time |
 | updatedAt | timestamp | Last update time |
@@ -335,6 +338,7 @@ Published content with metrics.
 | socialAccountId | text | FK → SocialAccount |
 | materialId | text | FK → Material (nullable) |
 | scheduleId | text | FK → Schedule (nullable) |
+| pendingPostId | text | FK → PendingPost (nullable) |
 | content | text | Published content |
 | hashtags | text[] | Used hashtags |
 | mediaUrls | text[] | Media file URLs |
