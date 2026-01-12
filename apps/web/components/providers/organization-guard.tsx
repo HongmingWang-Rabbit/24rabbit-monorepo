@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
@@ -12,7 +12,12 @@ interface OrganizationGuardProps {
 export function OrganizationGuard({ children }: OrganizationGuardProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [isChecking, setIsChecking] = useState(true);
+
+  // Derive the ready state from session data
+  const hasUser = !!session?.user;
+  const activeOrgId = session?.session?.activeOrganizationId;
+  const hasActiveOrg = !!activeOrgId;
+  const isReady = !isPending && hasUser && hasActiveOrg;
 
   useEffect(() => {
     if (isPending) return;
@@ -23,19 +28,13 @@ export function OrganizationGuard({ children }: OrganizationGuardProps) {
       return;
     }
 
-    // Check if user has an active organization
-    const activeOrgId = session.session?.activeOrganizationId;
-    if (!activeOrgId) {
-      // No active organization - redirect to organization selection page
+    // No active organization - redirect to organization selection page
+    if (!session.session?.activeOrganizationId) {
       router.push('/organization');
-      return;
     }
-
-    // User has an active organization - allow access
-    setIsChecking(false);
   }, [session, isPending, router]);
 
-  if (isPending || isChecking) {
+  if (!isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
