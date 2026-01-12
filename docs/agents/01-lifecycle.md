@@ -181,12 +181,12 @@ All jobs follow the BullMQ state machine:
 ```typescript
 async function schedulerCron() {
   // 1. Query active schedules due for execution
-  const dueSchedules = await prisma.schedule.findMany({
-    where: {
-      isActive: true,
-      nextRunAt: { lte: new Date() }
-    }
-  })
+  const dueSchedules = await db.select()
+    .from(schedules)
+    .where(and(
+      eq(schedules.isActive, true),
+      lte(schedules.nextRunAt, new Date())
+    ))
 
   // 2. For each schedule
   for (const schedule of dueSchedules) {
@@ -217,12 +217,12 @@ async function schedulerCron() {
 ```typescript
 async function analyticsCron() {
   // 1. Get posts from last 7 days
-  const recentPosts = await prisma.post.findMany({
-    where: {
-      publishedAt: { gte: subDays(new Date(), 7) },
-      status: 'PUBLISHED'
-    }
-  })
+  const recentPosts = await db.select()
+    .from(posts)
+    .where(and(
+      gte(posts.publishedAt, subDays(new Date(), 7)),
+      isNotNull(posts.publishedAt)
+    ))
 
   // 2. Queue analytics collection for each
   for (const post of recentPosts) {

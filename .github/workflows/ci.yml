@@ -34,7 +34,6 @@ jobs:
 
       - name: Run lint
         run: pnpm lint
-        continue-on-error: true  # TODO: Fix ESLint version conflicts
 
       - name: Check formatting
         run: pnpm format:check
