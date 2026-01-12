@@ -8,7 +8,7 @@
 import type { Queue } from 'bullmq';
 import type { Database } from '@24rabbit/database';
 import type { AnalyticsJobData } from '@24rabbit/queue';
-import { and, gte, isNotNull, sql } from '@24rabbit/database';
+import { and, gte, isNotNull } from '@24rabbit/database';
 import { posts } from '@24rabbit/database';
 import type { SocialPlatform } from '@24rabbit/shared';
 import type { DistributedLock } from '../utils/lock';

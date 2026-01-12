@@ -6,7 +6,7 @@
  */
 
 import type { Job } from 'bullmq';
-import type { PublishJobData, analyticsQueue } from '@24rabbit/queue';
+import type { PublishJobData } from '@24rabbit/queue';
 import type { Database } from '@24rabbit/database';
 import { eq } from '@24rabbit/database';
 import { pendingPosts, posts, socialAccounts, materials } from '@24rabbit/database';
@@ -209,7 +209,7 @@ export function createPublishProcessor(deps: PublishProcessorDeps) {
             pendingPost.content,
             organizationId
           );
-        } catch (embeddingError) {
+        } catch {
           // Non-critical, log and continue
           logger.warn('Failed to store post embedding', { postId: newPost.id });
         }

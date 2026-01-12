@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { user, session, account, verification } from './schema/auth';
+import { user, session, account } from './schema/auth';
 import {
   organizations,
   organizationMembers,

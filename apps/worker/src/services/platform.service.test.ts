@@ -21,13 +21,13 @@ vi.mock('../config', () => ({
 vi.mock('@24rabbit/platforms', () => ({
   FacebookConnector: class MockFacebookConnector {
     platform = 'FACEBOOK' as const;
-    async publishPost(params: any) {
+    async publishPost(_params: unknown) {
       return { id: 'post-123', url: 'https://facebook.com/post-123' };
     }
-    async getPostAnalytics(postId: string) {
+    async getPostAnalytics(_postId: string) {
       return { likes: 100, comments: 10, shares: 5, impressions: 1000, reach: 800, clicks: 50 };
     }
-    async refreshToken(refreshToken: string) {
+    async refreshToken(_refreshToken: string) {
       return { accessToken: 'new-token', expiresAt: new Date() };
     }
   },

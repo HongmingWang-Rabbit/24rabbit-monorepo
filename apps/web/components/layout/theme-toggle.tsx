@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional hydration pattern for theme toggles
   useEffect(() => setMounted(true), []);

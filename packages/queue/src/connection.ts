@@ -19,7 +19,7 @@ export function getQueueConnection(): IORedis {
     });
 
     connection.on('connect', () => {
-      console.log('Connected to Redis');
+      // Connection status logged for debugging
     });
   }
 

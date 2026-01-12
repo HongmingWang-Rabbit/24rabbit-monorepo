@@ -8,7 +8,7 @@
 import type { Job } from 'bullmq';
 import type { AnalyticsJobData } from '@24rabbit/queue';
 import type { Database } from '@24rabbit/database';
-import { eq, sql } from '@24rabbit/database';
+import { eq } from '@24rabbit/database';
 import { posts, socialAccounts } from '@24rabbit/database';
 import { decrypt } from '@24rabbit/shared';
 import type { PlatformService } from '../services/platform.service';
@@ -80,7 +80,8 @@ export function createAnalyticsProcessor(deps: AnalyticsProcessorDeps) {
       }
 
       // 3. Decrypt access token
-      const accessToken = decrypt(account.accessToken, encryptionKey);
+      // Note: accessToken will be needed when connector interface is updated to pass credentials
+      decrypt(account.accessToken, encryptionKey);
 
       // 4. Fetch analytics from platform
       // Note: The current connector interface doesn't pass accessToken to getPostAnalytics

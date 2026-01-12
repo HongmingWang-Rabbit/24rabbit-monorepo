@@ -194,6 +194,12 @@
     "orPasteUrl": "O pega una URL",
     "orEnterText": "O introduce texto",
     "assignToBrand": "Asignar a marca",
+    "gridView": "Vista de cuadrícula",
+    "listView": "Vista de lista",
+    "uploadedCount": "{count} subidos",
+    "failedCount": "{count} fallidos",
+    "noMaterials": "Sin materiales aún",
+    "noMaterialsDescription": "Sube tu primer material para empezar",
     "status": {
       "uploaded": "Subido",
       "processing": "Procesando",
@@ -285,7 +291,10 @@
     "text": "Texto",
     "allBrands": "Todas las marcas",
     "allPlatforms": "Todas las plataformas",
-    "allStatus": "Todos los estados"
+    "allStatus": "Todos los estados",
+    "filterByType": "Filtrar por tipo",
+    "filterByStatus": "Filtrar por estado",
+    "filterByBrand": "Filtrar por marca"
   },
   "theme": {
     "light": "Claro",

@@ -194,6 +194,12 @@
     "orPasteUrl": "Oder URL einfügen",
     "orEnterText": "Oder Text eingeben",
     "assignToBrand": "Marke zuweisen",
+    "gridView": "Rasteransicht",
+    "listView": "Listenansicht",
+    "uploadedCount": "{count} hochgeladen",
+    "failedCount": "{count} fehlgeschlagen",
+    "noMaterials": "Noch keine Materialien",
+    "noMaterialsDescription": "Laden Sie Ihr erstes Material hoch, um zu beginnen",
     "status": {
       "uploaded": "Hochgeladen",
       "processing": "Verarbeitung",
@@ -285,7 +291,10 @@
     "text": "Text",
     "allBrands": "Alle Marken",
     "allPlatforms": "Alle Plattformen",
-    "allStatus": "Alle Status"
+    "allStatus": "Alle Status",
+    "filterByType": "Nach Typ filtern",
+    "filterByStatus": "Nach Status filtern",
+    "filterByBrand": "Nach Marke filtern"
   },
   "theme": {
     "light": "Hell",

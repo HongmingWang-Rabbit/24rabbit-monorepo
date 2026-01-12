@@ -8,7 +8,6 @@ import { Mail, Lock, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const t = useTranslations('auth');
-  const tCommon = useTranslations('common');
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,7 +50,7 @@ export default function LoginPage() {
       if (result.error) {
         setError(result.error.message || t('socialLoginFailed'));
       }
-    } catch (err) {
+    } catch {
       setError(t('socialLoginFailed'));
     } finally {
       setLoading(false);

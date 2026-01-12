@@ -21,7 +21,7 @@ function createMockRedis() {
 
   return {
     store,
-    set: vi.fn(async (key: string, value: string, mode?: string, ex?: string, ttl?: number) => {
+    set: vi.fn(async (key: string, value: string, mode?: string, _ex?: string, _ttl?: number) => {
       if (mode === 'NX' && store.has(key)) {
         return null;
       }

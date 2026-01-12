@@ -1,9 +1,12 @@
 import type { SocialPlatform } from '@24rabbit/shared';
 
+/** Embedding vector dimension for text-embedding-004 model */
+export const EMBEDDING_DIMENSION = 768;
+
 // AI Adapter Interface
 export interface AIAdapter {
   analyzeImage(imageUrl: string): Promise<ImageAnalysisResult>;
-  analyzeVideo(videoUrl: string): Promise<VideoAnalysisResult>;
+  analyzeVideo(videoUrl: string, mimeType?: string): Promise<VideoAnalysisResult>;
   generateCopy(options: ContentGenerationOptions): Promise<GeneratedCopy>;
   generateEmbedding(text: string): Promise<number[]>;
 }
@@ -25,16 +28,6 @@ export interface VideoAnalysisResult {
   bestThumbnailTimestamp: number;
 }
 
-// Content Generation (legacy simple interface)
-export interface GenerateCopyParams {
-  platform: SocialPlatform;
-  brandTone?: string;
-  targetAudience?: string;
-  contentDescription: string;
-  hashtags?: string[];
-  maxLength?: number;
-}
-
 export interface GeneratedCopy {
   content: string;
   hashtags: string[];
@@ -42,7 +35,7 @@ export interface GeneratedCopy {
   reasoning?: string;
 }
 
-// Content Generation (rich options with Brand Profile context)
+// Content Generation Options
 export interface ContentGenerationOptions {
   material: {
     summary: string;

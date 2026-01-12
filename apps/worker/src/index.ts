@@ -106,9 +106,7 @@ async function main() {
   // Initialize Queues
   // ==========================================================================
 
-  const analyzeQueue = getQueue<AnalyzeJobData>(QUEUE_NAMES.ANALYZE);
   const generateQueue = getQueue<GenerateJobData>(QUEUE_NAMES.GENERATE);
-  const publishQueue = getQueue<PublishJobData>(QUEUE_NAMES.PUBLISH);
   const analyticsQueue = getQueue<AnalyticsJobData>(QUEUE_NAMES.ANALYTICS);
 
   // ==========================================================================
@@ -157,14 +155,10 @@ async function main() {
   const workerConnection = queueConnection as any;
 
   // Material Analysis Worker
-  const analyzeWorker = new Worker<AnalyzeJobData>(
-    QUEUE_NAMES.ANALYZE,
-    materialAnalysisProcessor,
-    {
-      connection: workerConnection,
-      concurrency: config.concurrency.analyze,
-    }
-  );
+  const analyzeWorker = new Worker<AnalyzeJobData>(QUEUE_NAMES.ANALYZE, materialAnalysisProcessor, {
+    connection: workerConnection,
+    concurrency: config.concurrency.analyze,
+  });
   workers.push(analyzeWorker);
   logger.info('Analyze worker created', { concurrency: config.concurrency.analyze });
 
@@ -181,26 +175,18 @@ async function main() {
   logger.info('Generate worker created', { concurrency: config.concurrency.generate });
 
   // Publish Worker
-  const publishWorker = new Worker<PublishJobData>(
-    QUEUE_NAMES.PUBLISH,
-    publishProcessor,
-    {
-      connection: workerConnection,
-      concurrency: config.concurrency.publish,
-    }
-  );
+  const publishWorker = new Worker<PublishJobData>(QUEUE_NAMES.PUBLISH, publishProcessor, {
+    connection: workerConnection,
+    concurrency: config.concurrency.publish,
+  });
   workers.push(publishWorker);
   logger.info('Publish worker created', { concurrency: config.concurrency.publish });
 
   // Analytics Worker
-  const analyticsWorker = new Worker<AnalyticsJobData>(
-    QUEUE_NAMES.ANALYTICS,
-    analyticsProcessor,
-    {
-      connection: workerConnection,
-      concurrency: config.concurrency.analytics,
-    }
-  );
+  const analyticsWorker = new Worker<AnalyticsJobData>(QUEUE_NAMES.ANALYTICS, analyticsProcessor, {
+    connection: workerConnection,
+    concurrency: config.concurrency.analytics,
+  });
   workers.push(analyticsWorker);
   logger.info('Analytics worker created', { concurrency: config.concurrency.analytics });
 

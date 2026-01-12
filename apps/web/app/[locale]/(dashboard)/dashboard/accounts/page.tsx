@@ -145,7 +145,7 @@ function AccountCard({
 
 function ConnectButton({
   platform,
-  available,
+  available: _available,
   comingSoon,
 }: {
   platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram' | 'youtube';

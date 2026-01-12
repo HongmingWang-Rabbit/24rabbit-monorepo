@@ -194,6 +194,12 @@
     "orPasteUrl": "或粘贴链接",
     "orEnterText": "或输入文本",
     "assignToBrand": "分配给品牌",
+    "gridView": "网格视图",
+    "listView": "列表视图",
+    "uploadedCount": "{count} 已上传",
+    "failedCount": "{count} 失败",
+    "noMaterials": "暂无素材",
+    "noMaterialsDescription": "上传您的第一个素材以开始使用",
     "status": {
       "uploaded": "已上传",
       "processing": "处理中",
@@ -285,7 +291,10 @@
     "text": "文本",
     "allBrands": "所有品牌",
     "allPlatforms": "所有平台",
-    "allStatus": "所有状态"
+    "allStatus": "所有状态",
+    "filterByType": "按类型筛选",
+    "filterByStatus": "按状态筛选",
+    "filterByBrand": "按品牌筛选"
   },
   "theme": {
     "light": "浅色",

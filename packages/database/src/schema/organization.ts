@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, integer, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, unique } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { user } from './auth';
 import { memberRole, subscriptionTier, subscriptionStatus, creditAction } from './enums';

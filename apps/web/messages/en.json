@@ -194,6 +194,12 @@
     "orPasteUrl": "Or paste a URL",
     "orEnterText": "Or enter text",
     "assignToBrand": "Assign to Brand",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "uploadedCount": "{count} uploaded",
+    "failedCount": "{count} failed",
+    "noMaterials": "No materials yet",
+    "noMaterialsDescription": "Upload your first material to get started",
     "status": {
       "uploaded": "Uploaded",
       "processing": "Processing",
@@ -285,7 +291,10 @@
     "text": "Text",
     "allBrands": "All Brands",
     "allPlatforms": "All Platforms",
-    "allStatus": "All Status"
+    "allStatus": "All Status",
+    "filterByType": "Filter by type",
+    "filterByStatus": "Filter by status",
+    "filterByBrand": "Filter by brand"
   },
   "theme": {
     "light": "Light",

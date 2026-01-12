@@ -100,7 +100,7 @@ export class FacebookConnector implements PlatformConnector {
     return data.id;
   }
 
-  async getPostAnalytics(postId: string): Promise<PostAnalytics> {
+  async getPostAnalytics(_postId: string): Promise<PostAnalytics> {
     // Note: This requires an access token with appropriate permissions
     // Implementation would need to be expanded for production use
 

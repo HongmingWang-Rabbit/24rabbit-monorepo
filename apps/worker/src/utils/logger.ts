@@ -76,13 +76,15 @@ function createLogEntry(
 function logToConsole(entry: Record<string, unknown>): void {
   if (config.isProd) {
     // JSON format for production log aggregation
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify(entry));
   } else {
     // Human-readable format for development
-    const { timestamp, level, service, message, ...rest } = entry;
+    const { level, service, message, ...rest } = entry;
     const contextStr = Object.keys(rest).length > 0 ? ` ${JSON.stringify(rest)}` : '';
     const levelEmoji =
       level === 'error' ? '!' : level === 'warn' ? '?' : level === 'info' ? '+' : '.';
+    // eslint-disable-next-line no-console
     console.log(`[${levelEmoji}] [${service}] ${message}${contextStr}`);
   }
 }

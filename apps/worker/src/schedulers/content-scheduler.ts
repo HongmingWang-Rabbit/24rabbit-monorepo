@@ -8,7 +8,7 @@
 import type { Queue } from 'bullmq';
 import type { Database } from '@24rabbit/database';
 import type { GenerateJobData } from '@24rabbit/queue';
-import { and, eq, lte, isNull, or, sql } from '@24rabbit/database';
+import { and, eq, lte, isNull, or } from '@24rabbit/database';
 import { schedules, materials, socialAccounts } from '@24rabbit/database';
 import type { SocialPlatform } from '@24rabbit/shared';
 import type { DistributedLock } from '../utils/lock';
@@ -319,7 +319,8 @@ function calculateNextPublishTime(schedule: {
   }
 
   const now = new Date();
-  const timezone = schedule.timezone ?? 'UTC';
+  // Note: timezone will be used when implementing proper timezone conversion
+  void (schedule.timezone ?? 'UTC');
 
   // Find the next preferred hour
   // Simplified implementation - in production, use a proper timezone library

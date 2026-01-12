@@ -76,11 +76,14 @@ export function createMaterialService(deps: MaterialServiceDeps): MaterialServic
       }
     },
 
-    async analyzeContent(content: ExtractedContent, materialType: string): Promise<MaterialAnalysis> {
+    async analyzeContent(
+      content: ExtractedContent,
+      materialType: string
+    ): Promise<MaterialAnalysis> {
       logger.debug('Analyzing content', { materialType, textLength: content.text.length });
 
-      // Build analysis prompt
-      const prompt = buildAnalysisPrompt(content, materialType);
+      // Build analysis prompt (will be used with dedicated analysis endpoint)
+      void buildAnalysisPrompt(content, materialType);
 
       // Call AI for analysis (using generateCopy as a workaround since we need text analysis)
       // In a real implementation, you might have a dedicated analyze method
@@ -183,7 +186,7 @@ async function extractUrl(material: MaterialData): Promise<ExtractedContent> {
 
 async function extractFile(
   material: MaterialData,
-  storageUrl?: string
+  _storageUrl?: string
 ): Promise<ExtractedContent> {
   if (!material.fileKey) {
     throw new Error('File material has no file key');
@@ -338,11 +341,53 @@ function extractKeywords(text: string): string[] {
   // Simple keyword extraction based on word frequency
   const words = text.toLowerCase().split(/\s+/);
   const stopWords = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'must', 'shall', 'can', 'this', 'that',
-    'these', 'those', 'it', 'its', 'they', 'them', 'their', 'we', 'our',
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'being',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'could',
+    'should',
+    'may',
+    'might',
+    'must',
+    'shall',
+    'can',
+    'this',
+    'that',
+    'these',
+    'those',
+    'it',
+    'its',
+    'they',
+    'them',
+    'their',
+    'we',
+    'our',
   ]);
 
   const wordCounts = new Map<string, number>();
@@ -362,7 +407,12 @@ function extractKeywords(text: string): string[] {
 function detectContentType(content: ExtractedContent): string {
   const text = content.text.toLowerCase();
 
-  if (text.includes('buy') || text.includes('sale') || text.includes('discount') || text.includes('price')) {
+  if (
+    text.includes('buy') ||
+    text.includes('sale') ||
+    text.includes('discount') ||
+    text.includes('price')
+  ) {
     return 'product';
   }
   if (text.includes('announce') || text.includes('launch') || text.includes('new')) {
@@ -378,7 +428,7 @@ function detectContentType(content: ExtractedContent): string {
   return 'article';
 }
 
-function generateSuggestedAngles(content: ExtractedContent): string[] {
+function generateSuggestedAngles(_content: ExtractedContent): string[] {
   return [
     'Focus on the main benefit',
     'Tell a story',

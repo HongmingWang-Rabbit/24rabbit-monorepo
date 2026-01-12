@@ -15,7 +15,7 @@ import type { SocialPlatform } from '@24rabbit/shared';
 import { PLATFORM_LIMITS } from '@24rabbit/shared';
 import type { SimilarityService } from '../services/similarity.service';
 import type { Logger } from '../utils/logger';
-import { classifyError, WorkerError, ContentPolicyError } from '../utils/errors';
+import { classifyError, WorkerError } from '../utils/errors';
 import { config } from '../config';
 
 // =============================================================================
@@ -425,7 +425,7 @@ async function validateAndFilterVariations(
         });
         continue;
       }
-    } catch (error) {
+    } catch {
       // Non-critical - log and continue
       logger.warn('Similarity check failed, continuing without check');
     }

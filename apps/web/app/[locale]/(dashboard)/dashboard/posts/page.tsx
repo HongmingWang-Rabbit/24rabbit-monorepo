@@ -1,6 +1,5 @@
 import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
 import { Facebook, Twitter, Linkedin, ExternalLink } from 'lucide-react';
 
 interface PostsPageProps {
@@ -16,7 +15,6 @@ export default async function PostsPage({ params }: PostsPageProps) {
 
 function PostsPageContent() {
   const tNav = useTranslations('nav');
-  const tCommon = useTranslations('common');
 
   return (
     <div className="space-y-6">

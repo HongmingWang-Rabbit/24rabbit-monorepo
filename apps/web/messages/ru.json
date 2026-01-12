@@ -194,6 +194,12 @@
     "orPasteUrl": "Или вставьте URL",
     "orEnterText": "Или введите текст",
     "assignToBrand": "Назначить бренду",
+    "gridView": "Сетка",
+    "listView": "Список",
+    "uploadedCount": "{count} загружено",
+    "failedCount": "{count} с ошибкой",
+    "noMaterials": "Нет материалов",
+    "noMaterialsDescription": "Загрузите первый материал, чтобы начать",
     "status": {
       "uploaded": "Загружено",
       "processing": "Обработка",
@@ -285,7 +291,10 @@
     "text": "Текст",
     "allBrands": "Все бренды",
     "allPlatforms": "Все платформы",
-    "allStatus": "Все статусы"
+    "allStatus": "Все статусы",
+    "filterByType": "Фильтр по типу",
+    "filterByStatus": "Фильтр по статусу",
+    "filterByBrand": "Фильтр по бренду"
   },
   "theme": {
     "light": "Светлая",

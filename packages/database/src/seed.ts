@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { db } from './db';
 import { user, organizations, organizationMembers, subscriptions, brandProfiles } from './schema';
 import { createId } from '@paralleldrive/cuid2';
