@@ -54,10 +54,18 @@ export default function OrganizationPage() {
     }
   }, [session, sessionLoading]);
 
-  // Redirect if not logged in
+  // Redirect if not logged in or if already has active organization
   useEffect(() => {
-    if (!sessionLoading && !session?.user) {
+    if (sessionLoading) return;
+
+    if (!session?.user) {
       router.push('/login');
+      return;
+    }
+
+    // If user already has an active organization, redirect to dashboard
+    if (session.session?.activeOrganizationId) {
+      router.push('/dashboard');
     }
   }, [session, sessionLoading, router]);
 
@@ -101,7 +109,25 @@ export default function OrganizationPage() {
         router.push('/dashboard');
         router.refresh();
       } else if (result.error) {
-        setError(result.error.message || t('createError'));
+        const errorMsg = result.error.message || '';
+        // If organization already exists, refresh the list
+        if (
+          errorMsg.toLowerCase().includes('already exists') ||
+          errorMsg.toLowerCase().includes('slug')
+        ) {
+          const listResult = await orgClient.list({});
+          if (listResult.data && listResult.data.length > 0) {
+            setOrganizations(listResult.data);
+            setShowCreateForm(false);
+            setError(null);
+            // Auto-select if only one org
+            if (listResult.data.length === 1) {
+              await handleSelectOrganization(listResult.data[0].id);
+              return;
+            }
+          }
+        }
+        setError(errorMsg || t('createError'));
         setCreating(false);
       }
     } catch (err) {
